@@ -1,0 +1,1225 @@
+{
+  "health": {
+    "status": "ok",
+    "generation_provider": "mock"
+  },
+  "products": [
+    {
+      "id": "syn-001",
+      "name": "Sabonete Brisa",
+      "description": "Sabonete corporal fictício de uso diário.",
+      "category": "higiene",
+      "price": "8.90",
+      "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+    },
+    {
+      "id": "syn-002",
+      "name": "Shampoo Aurora",
+      "description": "Shampoo fictício para limpeza dos cabelos.",
+      "category": "cabelos",
+      "price": "24.50",
+      "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+    },
+    {
+      "id": "syn-003",
+      "name": "Hidratante Nuvem",
+      "description": "Loção corporal fictícia.",
+      "category": "cuidados pessoais",
+      "price": "32.90",
+      "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+    },
+    {
+      "id": "syn-004",
+      "name": "Escova Sorriso",
+      "description": "Escova dental fictícia de cerdas macias.",
+      "category": "higiene bucal",
+      "price": "12.00",
+      "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+    },
+    {
+      "id": "syn-005",
+      "name": "Algodão Sereno",
+      "description": "Algodão fictício para cuidados pessoais.",
+      "category": "acessórios",
+      "price": "6.75",
+      "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+    }
+  ],
+  "generate": {
+    "id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+    "created_at": "2026-10-18T15:14:43.916901Z",
+    "briefing": {
+      "campaign_name": "Campanha Aurora",
+      "product_id": "syn-001",
+      "objective": "Divulgar produto sintético",
+      "target_audience": "Adultos interessados em higiene pessoal",
+      "channels": [
+        "feed",
+        "story",
+        "banner"
+      ],
+      "additional_instructions": "Demonstração de hackathon"
+    },
+    "pieces": [
+      {
+        "id": "12c96d35-ebff-46b9-a81f-dfb95596cca9",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "feed",
+        "title": "Conheça Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "draft",
+        "validations": [],
+        "reviews": []
+      },
+      {
+        "id": "506a9c3a-b0c6-47dd-8d72-0a7aaa56912b",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "story",
+        "title": "Seu próximo cuidado: Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "draft",
+        "validations": [],
+        "reviews": []
+      },
+      {
+        "id": "2d7892ae-3c3f-40e6-ad5b-50c041261e65",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "banner",
+        "title": "Descubra Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "draft",
+        "validations": [],
+        "reviews": []
+      }
+    ]
+  },
+  "validate": {
+    "id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+    "created_at": "2026-10-18T15:14:43.916901Z",
+    "briefing": {
+      "campaign_name": "Campanha Aurora",
+      "product_id": "syn-001",
+      "objective": "Divulgar produto sintético",
+      "target_audience": "Adultos interessados em higiene pessoal",
+      "channels": [
+        "feed",
+        "story",
+        "banner"
+      ],
+      "additional_instructions": "Demonstração de hackathon"
+    },
+    "pieces": [
+      {
+        "id": "12c96d35-ebff-46b9-a81f-dfb95596cca9",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "feed",
+        "title": "Conheça Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "validated",
+        "validations": [
+          {
+            "id": "ec24c057-67b4-484a-a24d-6300c2f07929",
+            "created_at": "2026-10-18T15:14:44.008495Z",
+            "fingerprint": "6a3c8458f2a344154da62875830e565f4f80e2894b4a66d0e7dabc3a7b5beebc",
+            "success": true,
+            "results": [
+              {
+                "rule_code": "PRODUCT_EXISTS",
+                "severity": "critical",
+                "message": "Produto deve existir no catálogo.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "PRICE_MATCH",
+                "severity": "critical",
+                "message": "Preço deve corresponder ao catálogo.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "PRODUCT_NAME_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "OFFER_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "disclaimer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "CHANNEL_ALLOWED",
+                "severity": "critical",
+                "message": "Canal permitido.",
+                "field": "channel",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 90 caracteres.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 240 caracteres.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 40 caracteres.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_INFORMATION",
+                "severity": "critical",
+                "message": "Informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                "field": "disclaimer",
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reviews": []
+      },
+      {
+        "id": "506a9c3a-b0c6-47dd-8d72-0a7aaa56912b",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "story",
+        "title": "Seu próximo cuidado: Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "validated",
+        "validations": [
+          {
+            "id": "85ed66c2-d6b0-4b63-8e74-8e80a41687c1",
+            "created_at": "2026-10-18T15:14:44.023805Z",
+            "fingerprint": "a90c047997f8cc48650d53f94ce2a663cdca8b70fc53aa4a38f98a13f6bc60eb",
+            "success": true,
+            "results": [
+              {
+                "rule_code": "PRODUCT_EXISTS",
+                "severity": "critical",
+                "message": "Produto deve existir no catálogo.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "PRICE_MATCH",
+                "severity": "critical",
+                "message": "Preço deve corresponder ao catálogo.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "PRODUCT_NAME_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "OFFER_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "disclaimer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "CHANNEL_ALLOWED",
+                "severity": "critical",
+                "message": "Canal permitido.",
+                "field": "channel",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 90 caracteres.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 240 caracteres.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 40 caracteres.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_INFORMATION",
+                "severity": "critical",
+                "message": "Informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                "field": "disclaimer",
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reviews": []
+      },
+      {
+        "id": "2d7892ae-3c3f-40e6-ad5b-50c041261e65",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "banner",
+        "title": "Descubra Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "validated",
+        "validations": [
+          {
+            "id": "0b156219-c677-4b45-bfd2-cb77bf483b63",
+            "created_at": "2026-10-18T15:14:44.026564Z",
+            "fingerprint": "f53ca5b1808fcf0e2710955aa86e9384f984b3e03e2a331f33115741cbd3f3ea",
+            "success": true,
+            "results": [
+              {
+                "rule_code": "PRODUCT_EXISTS",
+                "severity": "critical",
+                "message": "Produto deve existir no catálogo.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "PRICE_MATCH",
+                "severity": "critical",
+                "message": "Preço deve corresponder ao catálogo.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "PRODUCT_NAME_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "OFFER_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "disclaimer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "CHANNEL_ALLOWED",
+                "severity": "critical",
+                "message": "Canal permitido.",
+                "field": "channel",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 90 caracteres.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 240 caracteres.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 40 caracteres.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_INFORMATION",
+                "severity": "critical",
+                "message": "Informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                "field": "disclaimer",
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reviews": []
+      }
+    ]
+  },
+  "review": {
+    "id": "12c96d35-ebff-46b9-a81f-dfb95596cca9",
+    "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+    "channel": "feed",
+    "title": "Conheça Sabonete Brisa",
+    "subtitle": "Sabonete corporal fictício de uso diário.",
+    "cta": "Conheça o produto",
+    "disclaimer": "Campanha fictícia. Dados sintéticos.",
+    "product_id": "syn-001",
+    "product_name": "Sabonete Brisa",
+    "price": "8.90",
+    "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+    "state": "approved",
+    "validations": [
+      {
+        "id": "ec24c057-67b4-484a-a24d-6300c2f07929",
+        "created_at": "2026-10-18T15:14:44.008495Z",
+        "fingerprint": "6a3c8458f2a344154da62875830e565f4f80e2894b4a66d0e7dabc3a7b5beebc",
+        "success": true,
+        "results": [
+          {
+            "rule_code": "PRODUCT_EXISTS",
+            "severity": "critical",
+            "message": "Produto deve existir no catálogo.",
+            "field": "product_id",
+            "passed": true
+          },
+          {
+            "rule_code": "PRICE_MATCH",
+            "severity": "critical",
+            "message": "Preço deve corresponder ao catálogo.",
+            "field": "price",
+            "passed": true
+          },
+          {
+            "rule_code": "PRODUCT_NAME_MATCH",
+            "severity": "critical",
+            "message": "Dados autorizados do catálogo.",
+            "field": "product_name",
+            "passed": true
+          },
+          {
+            "rule_code": "OFFER_MATCH",
+            "severity": "critical",
+            "message": "Dados autorizados do catálogo.",
+            "field": "authorized_offer",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_FIELD",
+            "severity": "critical",
+            "message": "Campo obrigatório.",
+            "field": "title",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_FIELD",
+            "severity": "critical",
+            "message": "Campo obrigatório.",
+            "field": "subtitle",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_FIELD",
+            "severity": "critical",
+            "message": "Campo obrigatório.",
+            "field": "cta",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_FIELD",
+            "severity": "critical",
+            "message": "Campo obrigatório.",
+            "field": "disclaimer",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_FIELD",
+            "severity": "critical",
+            "message": "Campo obrigatório.",
+            "field": "product_id",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_FIELD",
+            "severity": "critical",
+            "message": "Campo obrigatório.",
+            "field": "product_name",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_FIELD",
+            "severity": "critical",
+            "message": "Campo obrigatório.",
+            "field": "price",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_FIELD",
+            "severity": "critical",
+            "message": "Campo obrigatório.",
+            "field": "authorized_offer",
+            "passed": true
+          },
+          {
+            "rule_code": "CHANNEL_ALLOWED",
+            "severity": "critical",
+            "message": "Canal permitido.",
+            "field": "channel",
+            "passed": true
+          },
+          {
+            "rule_code": "CHARACTER_LIMIT",
+            "severity": "critical",
+            "message": "Limite de 90 caracteres.",
+            "field": "title",
+            "passed": true
+          },
+          {
+            "rule_code": "CHARACTER_LIMIT",
+            "severity": "critical",
+            "message": "Limite de 240 caracteres.",
+            "field": "subtitle",
+            "passed": true
+          },
+          {
+            "rule_code": "CHARACTER_LIMIT",
+            "severity": "critical",
+            "message": "Limite de 40 caracteres.",
+            "field": "cta",
+            "passed": true
+          },
+          {
+            "rule_code": "REQUIRED_INFORMATION",
+            "severity": "critical",
+            "message": "Informação obrigatória: Campanha fictícia. Dados sintéticos.",
+            "field": "disclaimer",
+            "passed": true
+          }
+        ]
+      }
+    ],
+    "reviews": [
+      {
+        "decision": "approved",
+        "reviewer_id": "reviewer-demo",
+        "comment": null,
+        "id": "29c75660-9877-488f-ad5a-d6ad62cf624c",
+        "created_at": "2026-10-18T15:14:44.059147Z",
+        "fingerprint": "6a3c8458f2a344154da62875830e565f4f80e2894b4a66d0e7dabc3a7b5beebc"
+      }
+    ]
+  },
+  "get_campaign": {
+    "id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+    "created_at": "2026-10-18T15:14:43.916901Z",
+    "briefing": {
+      "campaign_name": "Campanha Aurora",
+      "product_id": "syn-001",
+      "objective": "Divulgar produto sintético",
+      "target_audience": "Adultos interessados em higiene pessoal",
+      "channels": [
+        "feed",
+        "story",
+        "banner"
+      ],
+      "additional_instructions": "Demonstração de hackathon"
+    },
+    "pieces": [
+      {
+        "id": "12c96d35-ebff-46b9-a81f-dfb95596cca9",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "feed",
+        "title": "Conheça Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "approved",
+        "validations": [
+          {
+            "id": "ec24c057-67b4-484a-a24d-6300c2f07929",
+            "created_at": "2026-10-18T15:14:44.008495Z",
+            "fingerprint": "6a3c8458f2a344154da62875830e565f4f80e2894b4a66d0e7dabc3a7b5beebc",
+            "success": true,
+            "results": [
+              {
+                "rule_code": "PRODUCT_EXISTS",
+                "severity": "critical",
+                "message": "Produto deve existir no catálogo.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "PRICE_MATCH",
+                "severity": "critical",
+                "message": "Preço deve corresponder ao catálogo.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "PRODUCT_NAME_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "OFFER_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "disclaimer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "CHANNEL_ALLOWED",
+                "severity": "critical",
+                "message": "Canal permitido.",
+                "field": "channel",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 90 caracteres.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 240 caracteres.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 40 caracteres.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_INFORMATION",
+                "severity": "critical",
+                "message": "Informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                "field": "disclaimer",
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reviews": [
+          {
+            "decision": "approved",
+            "reviewer_id": "reviewer-demo",
+            "comment": null,
+            "id": "29c75660-9877-488f-ad5a-d6ad62cf624c",
+            "created_at": "2026-10-18T15:14:44.059147Z",
+            "fingerprint": "6a3c8458f2a344154da62875830e565f4f80e2894b4a66d0e7dabc3a7b5beebc"
+          }
+        ]
+      },
+      {
+        "id": "506a9c3a-b0c6-47dd-8d72-0a7aaa56912b",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "story",
+        "title": "Seu próximo cuidado: Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "validated",
+        "validations": [
+          {
+            "id": "85ed66c2-d6b0-4b63-8e74-8e80a41687c1",
+            "created_at": "2026-10-18T15:14:44.023805Z",
+            "fingerprint": "a90c047997f8cc48650d53f94ce2a663cdca8b70fc53aa4a38f98a13f6bc60eb",
+            "success": true,
+            "results": [
+              {
+                "rule_code": "PRODUCT_EXISTS",
+                "severity": "critical",
+                "message": "Produto deve existir no catálogo.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "PRICE_MATCH",
+                "severity": "critical",
+                "message": "Preço deve corresponder ao catálogo.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "PRODUCT_NAME_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "OFFER_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "disclaimer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "CHANNEL_ALLOWED",
+                "severity": "critical",
+                "message": "Canal permitido.",
+                "field": "channel",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 90 caracteres.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 240 caracteres.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 40 caracteres.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_INFORMATION",
+                "severity": "critical",
+                "message": "Informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                "field": "disclaimer",
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reviews": []
+      },
+      {
+        "id": "2d7892ae-3c3f-40e6-ad5b-50c041261e65",
+        "campaign_id": "d0792463-b51a-4f67-908f-afb79d4ed2fb",
+        "channel": "banner",
+        "title": "Descubra Sabonete Brisa",
+        "subtitle": "Sabonete corporal fictício de uso diário.",
+        "cta": "Conheça o produto",
+        "disclaimer": "Campanha fictícia. Dados sintéticos.",
+        "product_id": "syn-001",
+        "product_name": "Sabonete Brisa",
+        "price": "8.90",
+        "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+        "state": "validated",
+        "validations": [
+          {
+            "id": "0b156219-c677-4b45-bfd2-cb77bf483b63",
+            "created_at": "2026-10-18T15:14:44.026564Z",
+            "fingerprint": "f53ca5b1808fcf0e2710955aa86e9384f984b3e03e2a331f33115741cbd3f3ea",
+            "success": true,
+            "results": [
+              {
+                "rule_code": "PRODUCT_EXISTS",
+                "severity": "critical",
+                "message": "Produto deve existir no catálogo.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "PRICE_MATCH",
+                "severity": "critical",
+                "message": "Preço deve corresponder ao catálogo.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "PRODUCT_NAME_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "OFFER_MATCH",
+                "severity": "critical",
+                "message": "Dados autorizados do catálogo.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "disclaimer",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_id",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "product_name",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "price",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_FIELD",
+                "severity": "critical",
+                "message": "Campo obrigatório.",
+                "field": "authorized_offer",
+                "passed": true
+              },
+              {
+                "rule_code": "CHANNEL_ALLOWED",
+                "severity": "critical",
+                "message": "Canal permitido.",
+                "field": "channel",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 90 caracteres.",
+                "field": "title",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 240 caracteres.",
+                "field": "subtitle",
+                "passed": true
+              },
+              {
+                "rule_code": "CHARACTER_LIMIT",
+                "severity": "critical",
+                "message": "Limite de 40 caracteres.",
+                "field": "cta",
+                "passed": true
+              },
+              {
+                "rule_code": "REQUIRED_INFORMATION",
+                "severity": "critical",
+                "message": "Informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                "field": "disclaimer",
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reviews": []
+      }
+    ]
+  },
+  "errors": {
+    "not_found": {
+      "error": {
+        "code": "PRODUCT_NOT_FOUND",
+        "message": "Produto não encontrado.",
+        "details": []
+      }
+    },
+    "invalid_request": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Dados de entrada inválidos.",
+        "details": [
+          {
+            "field": "body.campaign_name",
+            "message": "Field required",
+            "type": "missing"
+          },
+          {
+            "field": "body.product_id",
+            "message": "Field required",
+            "type": "missing"
+          },
+          {
+            "field": "body.objective",
+            "message": "Field required",
+            "type": "missing"
+          },
+          {
+            "field": "body.target_audience",
+            "message": "Field required",
+            "type": "missing"
+          },
+          {
+            "field": "body.channels",
+            "message": "Field required",
+            "type": "missing"
+          }
+        ]
+      }
+    },
+    "approval_blocked": {
+      "error": {
+        "code": "APPROVAL_BLOCKED",
+        "message": "Aprovação exige validação atual bem-sucedida e estado validated.",
+        "details": []
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "syn-001",
+    "name": "Sabonete Brisa",
+    "description": "Sabonete corporal fictício de uso diário.",
+    "category": "higiene",
+    "price": "8.90",
+    "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+  },
+  {
+    "id": "syn-002",
+    "name": "Shampoo Aurora",
+    "description": "Shampoo fictício para limpeza dos cabelos.",
+    "category": "cabelos",
+    "price": "24.50",
+    "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+  },
+  {
+    "id": "syn-003",
+    "name": "Hidratante Nuvem",
+    "description": "Loção corporal fictícia.",
+    "category": "cuidados pessoais",
+    "price": "32.90",
+    "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+  },
+  {
+    "id": "syn-004",
+    "name": "Escova Sorriso",
+    "description": "Escova dental fictícia de cerdas macias.",
+    "category": "higiene bucal",
+    "price": "12.00",
+    "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+  },
+  {
+    "id": "syn-005",
+    "name": "Algodão Sereno",
+    "description": "Algodão fictício para cuidados pessoais.",
+    "category": "acessórios",
+    "price": "6.75",
+    "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+  }
+]

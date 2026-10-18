@@ -1,0 +1,42 @@
+{
+  "version": "synthetic-1",
+  "synthetic": true,
+  "notice": "Regras provisórias e sintéticas. Não são regras oficiais da Pague Menos.",
+  "allowed_channels": [
+    "feed",
+    "story",
+    "banner"
+  ],
+  "required_fields": [
+    "title",
+    "subtitle",
+    "cta",
+    "disclaimer",
+    "product_id",
+    "product_name",
+    "price",
+    "authorized_offer"
+  ],
+  "character_limits": {
+    "feed": {
+      "title": 90,
+      "subtitle": 240,
+      "cta": 40
+    },
+    "story": {
+      "title": 90,
+      "subtitle": 240,
+      "cta": 40
+    },
+    "banner": {
+      "title": 90,
+      "subtitle": 240,
+      "cta": 40
+    }
+  },
+  "required_information": {
+    "disclaimer": [
+      "Campanha fictícia. Dados sintéticos."
+    ]
+  }
+}

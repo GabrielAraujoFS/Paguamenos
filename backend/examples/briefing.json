@@ -1,0 +1,8 @@
+{
+  "campaign_name": "Campanha Aurora",
+  "product_id": "syn-001",
+  "objective": "Divulgar produto sintético",
+  "target_audience": "Adultos interessados em higiene pessoal",
+  "channels": ["feed", "story", "banner"],
+  "additional_instructions": "Demonstração de hackathon"
+}
