@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
+from pydantic import ValidationError
 from app.api.dependencies import session
 from app.models import CampaignModel, PieceModel
 from app.schemas import Briefing, Campaign, GeneratedText
@@ -17,7 +18,11 @@ def generate(briefing: Briefing, request: Request, db: Session = Depends(session
     product = request.app.state.catalog.get(briefing.product_id)
     if product is None:
         fail(404, "PRODUCT_NOT_FOUND", "Produto não encontrado.")
-    generated = [GeneratedText.model_validate(p) for p in request.app.state.generator.generate(briefing, product)]
+    rules = request.app.state.rules_loader()
+    try:
+        generated = [GeneratedText.model_validate(p) for p in request.app.state.generator.generate(briefing, product)]
+    except (ValidationError, TypeError, ValueError):
+        fail(502, 'GENERATION_CONTRACT_ERROR', 'O gerador deve retornar apenas canal e campos textuais válidos.')
     if sorted(p.channel for p in generated) != sorted(briefing.channels):
         fail(502, "GENERATION_CONTRACT_ERROR", "O gerador deve retornar uma peça por canal solicitado.")
     campaign = CampaignModel(briefing=briefing.model_dump(mode="json"))
@@ -25,7 +30,7 @@ def generate(briefing: Briefing, request: Request, db: Session = Depends(session
     for index, channel in enumerate(briefing.channels):
         content = by_channel[channel].model_dump(mode="json")
         content.update(product_id=product.id, product_name=product.name, price=str(product.price),
-            authorized_offer=product.authorized_offer, disclaimer="Campanha fictícia. Dados sintéticos.")
+            authorized_offer=product.authorized_offer, disclaimer=rules['generation']['disclaimer'])
         campaign.pieces.append(PieceModel(position=index, content=content, state="draft"))
     db.add(campaign)
     db.flush()

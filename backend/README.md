@@ -2,7 +2,7 @@
 
 Python 3.13, FastAPI, Pydantic, SQLite e SQLAlchemy. Fluxo local:
 briefing → geração simulada → validação objetiva → revisão humana.
-Dados, ofertas e regras são sintéticos e não representam regras oficiais da Pague Menos.
+Dados, ofertas e regras são sintéticos e não representam regras oficiais de marcas reais.
 Sem API externa de IA, frontend, imagens, autenticação complexa ou publicação automática.
 Mantenha o repositório privado. Nenhum commit ou publicação é necessário para executar.
 
@@ -39,6 +39,7 @@ com identificadores de revisão simulados e sem autenticação.
 - `app/services/workflow.py`: estados, invalidação e respostas.
 - `app/data/products.json`: catálogo sintético de cinco produtos.
 - `app/data/brand_rules.json`: regras sintéticas configuráveis.
+- `app/schemas/configuration.py`: validação da configuração interna, sem novos campos na API.
 - `tests/`: banco temporário independente por teste.
 - `examples/`: requisições e respostas reais do mock, incluindo erros.
 - `docs/integracao.md`: contrato para Alexsandro e decisões de Emily.
@@ -99,8 +100,10 @@ Os tipos e campos completos estão em OpenAPI.
 
 A validação registra resultados com `rule_code`, `severity`, `message`,
 `field` e `passed`, além de data, fingerprint e sucesso global.
-As regras atuais são críticas: produto existente, preço, nome e oferta autorizados,
-obrigatoriedade, canal, limites de caracteres e informação obrigatória.
+Produto existente, preço, nome, oferta autorizada, campos obrigatórios e canal
+continuam críticos. Expressões obrigatórias/proibidas e regras editoriais podem
+produzir alertas configurados. O Guardian também verifica preços e condições no
+texto dentro dos formatos suportados. Falhas `warning`/`info` não impedem `success: true`.
 Os limites são configuráveis por canal no JSON. Todos os resultados, inclusive os
 aprovados, ficam registrados. Revalidar cria um novo registro; uma aprovação atual
 é preservada se nada mudou e a nova validação passa. Uma rejeitada que passa por
@@ -122,6 +125,14 @@ título, subtítulo e CTA. O mock varia o texto por canal e não interpreta livr
 objetivo, público ou instruções adicionais; esses campos são armazenados no briefing
 e estão disponíveis para um futuro provedor.
 
+Nome, identidade textual, cores de referência, estilo do mock, templates, aviso,
+expressões e severidades são configurados no JSON local. Consulte o
+[guia de configuração](docs/configuracao.md) para campos, padrões, limites da
+checagem comercial e [exemplos de alerta/bloqueio](examples/configurable_validation.json).
+Não há análise visual ou semântica, nem suporte a múltiplos públicos nesta etapa.
+Ao atualizar a configuração, consulte/revalide campanhas antes de revisar:
+a assinatura inclui toda a configuração e preserva o histórico anterior.
+
 ## Testes
 
 Na pasta `backend`:
@@ -132,7 +143,9 @@ Na pasta `backend`:
 
 Os testes não acessam serviços externos nem o banco da demonstração. Cobrem os dez
 cenários pedidos, invalidação de conteúdo/catálogo/regras, rejeição, CORS, erros,
-contrato de geração e OpenAPI.
+contrato de geração e OpenAPI. Também cobrem normalização de expressões,
+severidades, bloqueios comerciais em texto, configuração inválida e personalização
+do mock. Os 27 testes originais foram preservados.
 
 ## Substituir o mock futuramente
 
@@ -142,4 +155,4 @@ Injete a implementação via `create_app(generator=MeuProvedor())` e aponte o Uv
 para essa aplicação. Não altere as rotas nem permita campos comerciais na saída
 do gerador. O catálogo continua sendo a fonte de preço/oferta e a validação
 continua obrigatória. Para um provedor real, definir com o time tratamento de
-timeout, falhas e privacidade antes da integração. Nenhum provedor é chamado no MVP.
+timeout, falhas e privacidade antes da integração. Nenhum provedor externo é chamado no MVP.
