@@ -83,8 +83,20 @@ uma lista fechada de `rule_code`. Novos códigos: `REQUIRED_EXPRESSION`,
 Consulte [configuração e limitações](configuracao.md) e os
 [exemplos completos de alerta e bloqueio](../examples/configurable_validation.json).
 As configurações locais do exemplo não são enviadas pelo React.
-`generation_provider: mock` continua identificando a geração simulada;
-`custom` identifica uma implementação injetada, sem comprovar uso de IA real.
+`generation_provider: mock` identifica geração simulada; `gemini` identifica o
+adaptador real configurado (não comprova conectividade). `custom` identifica
+outras implementações injetadas. Não dependa de uma lista fechada com mock/custom.
+
+## Integração Gemini opcional
+
+Os sete endpoints e o OpenAPI permanecem iguais. Geração pode demorar: mantenha
+indicador de espera e evite envios duplicados. `subtitle` é a legenda; permanece
+uma peça por canal. Todos os erros previstos da integração usam 502 no envelope
+existente, incluindo GENERATION_AUTH_ERROR, GENERATION_RATE_LIMIT,
+GENERATION_TIMEOUT, GENERATION_UNAVAILABLE e GENERATION_CONTRACT_ERROR.
+Mostre error.message e permita nova tentativa explícita; não há fallback.
+A chave é exclusiva do backend. Fluxo continua gerar → validar → revisar.
+Consulte [configuração e limitações](geracao-ia.md).
 
 ## Decisões de Emily
 

@@ -1,9 +1,10 @@
 # Creative Factory + Brand Guardian — backend MVP
 
 Python 3.13, FastAPI, Pydantic, SQLite e SQLAlchemy. Fluxo local:
-briefing → geração simulada → validação objetiva → revisão humana.
+briefing → geração textual (mock ou Gemini) → validação objetiva → revisão humana.
 Dados, ofertas e regras são sintéticos e não representam regras oficiais de marcas reais.
-Sem API externa de IA, frontend, imagens, autenticação complexa ou publicação automática.
+Gemini é opcional; mock permanece padrão. Sem frontend, imagens, autenticação complexa ou publicação automática.
+Consulte [configuração de IA e nível gratuito](docs/geracao-ia.md).
 Mantenha o repositório privado. Nenhum commit ou publicação é necessário para executar.
 
 ## Instalação e execução
@@ -123,7 +124,7 @@ O cliente não envia preço nem oferta na geração. Esses dados são anexados p
 backend após obter o texto do gerador; o schema do gerador aceita somente canal,
 título, subtítulo e CTA. O mock varia o texto por canal e não interpreta livremente
 objetivo, público ou instruções adicionais; esses campos são armazenados no briefing
-e estão disponíveis para um futuro provedor.
+e são utilizados pelo provedor Gemini opcional.
 
 Nome, identidade textual, cores de referência, estilo do mock, templates, aviso,
 expressões e severidades são configurados no JSON local. Consulte o
@@ -147,12 +148,12 @@ contrato de geração e OpenAPI. Também cobrem normalização de expressões,
 severidades, bloqueios comerciais em texto, configuração inválida e personalização
 do mock. Os 27 testes originais foram preservados.
 
-## Substituir o mock futuramente
+## Configurar ou substituir o provedor
 
 Implemente `GenerationService.generate(briefing, product) -> list[GeneratedText]`
 em `app/services/generation.py`. Devolva exatamente uma peça por canal solicitado.
 Injete a implementação via `create_app(generator=MeuProvedor())` e aponte o Uvicorn
 para essa aplicação. Não altere as rotas nem permita campos comerciais na saída
 do gerador. O catálogo continua sendo a fonte de preço/oferta e a validação
-continua obrigatória. Para um provedor real, definir com o time tratamento de
-timeout, falhas e privacidade antes da integração. Nenhum provedor externo é chamado no MVP.
+continua obrigatória. Gemini já está disponível via `GENERATION_PROVIDER=gemini`;
+consulte [configuração, falhas e limitações](docs/geracao-ia.md).
