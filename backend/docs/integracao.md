@@ -54,6 +54,38 @@ Preços são dados autorizados de exibição, não saída da IA.
 Use strings decimais para preservar centavos. No MVP não há paginação, edição,
 listagem de campanhas ou status agregado da campanha.
 
+## Atualização configurável: o que muda para o frontend
+
+Os sete endpoints e todos os campos de requisição/resposta permanecem iguais;
+o teste de contrato compara o OpenAPI atual ao arquivo original. Não há endpoint
+de marca ou campos novos no briefing. Uma peça por canal solicitado e um único
+`target_audience` por campanha continuam sendo o comportamento vigente.
+
+O conteúdo do mock pode mudar com a configuração, assim como o número de resultados
+de validação. Não dependa de textos fixos, da posição das regras na lista nem de
+uma lista fechada de `rule_code`. Novos códigos: `REQUIRED_EXPRESSION`,
+`FORBIDDEN_EXPRESSION`, `TEXT_PRICE_MATCH`, `TEXT_OFFER_MATCH`.
+
+- Exiba mensagens e diferencie `critical`, `warning` e `info`.
+- `passed: false` com `warning`/`info` não bloqueia aprovação. Não use
+  `results.every(r => r.passed)` como critério para liberar a revisão.
+- Considere o estado atual e `validations[validations.length - 1].success`.
+  A aprovação é sempre explícita e o servidor decide, retornando 409 se bloqueada.
+- `field` é texto: normalmente contém o nome do campo; em `REQUIRED_EXPRESSION`
+  pode listar campos candidatos separados por vírgula. Se não houver um campo
+  editável correspondente, mostre a mensagem na área geral de validação.
+- Mudanças no perfil/regras, inclusive a atualização desta versão, podem tornar
+  antigas validações/aprovações inaplicáveis. Atualize a campanha por GET e ofereça
+  revalidação; preserve a exibição do histórico como registro de decisões passadas.
+- Saída inválida de um futuro provedor também retorna erro estruturado 502,
+  código `GENERATION_CONTRACT_ERROR`; não indica falha de validação de marca.
+
+Consulte [configuração e limitações](configuracao.md) e os
+[exemplos completos de alerta e bloqueio](../examples/configurable_validation.json).
+As configurações locais do exemplo não são enviadas pelo React.
+`generation_provider: mock` continua identificando a geração simulada;
+`custom` identifica uma implementação injetada, sem comprovar uso de IA real.
+
 ## Decisões de Emily
 
 - Regras oficiais de marca, tom de voz, mensagens e avisos obrigatórios.
@@ -64,5 +96,5 @@ listagem de campanhas ou status agregado da campanha.
   incluindo como objetivo, público e instruções adicionais influenciam o texto.
 
 Até essas decisões, toda regra e todo dado comercial permanecem sintéticos.
-Não se atribuem essas regras à Pague Menos. A integração React pode avançar
+Não se atribuem essas regras a nenhuma marca real. A integração React pode avançar
 com os contratos atuais para a entrega de 21/10/2026; o hackathon é em 26/10/2026.

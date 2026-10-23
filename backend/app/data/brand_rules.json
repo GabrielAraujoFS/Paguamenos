@@ -1,7 +1,13 @@
 {
-  "version": "synthetic-1",
+  "version": "synthetic-configurable-1",
   "synthetic": true,
-  "notice": "Regras provisórias e sintéticas. Não são regras oficiais da Pague Menos.",
+  "notice": "Regras provisórias e sintéticas para desenvolvimento. Não representam regras oficiais de nenhuma marca.",
+  "brand": {
+    "name": "Marca de demonstração",
+    "textual_identity": "Cuidado com informação clara.",
+    "allowed_colors": ["#245C72", "#FFFFFF"],
+    "tone_of_voice": "neutro"
+  },
   "allowed_channels": [
     "feed",
     "story",
@@ -38,5 +44,48 @@
     "disclaimer": [
       "Campanha fictícia. Dados sintéticos."
     ]
+  },
+  "required_expressions": [],
+  "forbidden_expressions": [
+    {
+      "expression": "cura garantida",
+      "fields": ["title", "subtitle", "cta", "disclaimer"],
+      "channels": ["feed", "story", "banner"],
+      "severity": "critical"
+    },
+    {
+      "expression": "resultado garantido",
+      "fields": ["title", "subtitle", "cta", "disclaimer"],
+      "channels": ["feed", "story", "banner"],
+      "severity": "critical"
+    }
+  ],
+  "severities": {
+    "CHARACTER_LIMIT": "critical",
+    "REQUIRED_INFORMATION": "critical"
+  },
+  "commercial": {
+    "text_price_policy": "catalog_only",
+    "offer_markers": ["desconto", "promoção", "frete grátis", "cashback", "cupom"]
+  },
+  "generation": {
+    "disclaimer": "Campanha fictícia. Dados sintéticos.",
+    "templates": {
+      "feed": {
+        "title": "{brand_name}: conheça {product_name}",
+        "subtitle": "{description} {brand_identity}",
+        "cta": "{cta}"
+      },
+      "story": {
+        "title": "Seu próximo cuidado: {product_name}",
+        "subtitle": "{description} {brand_identity}",
+        "cta": "{cta}"
+      },
+      "banner": {
+        "title": "Descubra {product_name}",
+        "subtitle": "{description} {brand_identity}",
+        "cta": "{cta}"
+      }
+    }
   }
 }

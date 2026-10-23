@@ -1,0 +1,986 @@
+{
+  "notice": "Exemplos sintéticos com IDs ilustrativos. configuration_overrides é configuração local do servidor, não corpo de API. generation.templates usa sobrescrita parcial do exemplo sobre o arquivo completo.",
+  "scenarios": [
+    {
+      "name": "alerta_permite_revisao",
+      "configuration_overrides": {
+        "required_expressions": [
+          {
+            "expression": "Confira os detalhes",
+            "fields": [
+              "cta"
+            ],
+            "channels": [
+              "feed"
+            ],
+            "severity": "warning"
+          }
+        ]
+      },
+      "generate": {
+        "method": "POST",
+        "path": "/campaigns/generate",
+        "request": {
+          "campaign_name": "Campanha Aurora",
+          "product_id": "syn-001",
+          "objective": "Divulgar produto sintético",
+          "target_audience": "Adultos interessados em higiene pessoal",
+          "channels": [
+            "feed"
+          ],
+          "additional_instructions": "Demonstração de hackathon"
+        },
+        "status": 201,
+        "response": {
+          "id": "f94e5bfd-212f-40e9-95dc-ac65d632f35c",
+          "created_at": "2026-10-20T04:14:42.415827Z",
+          "briefing": {
+            "campaign_name": "Campanha Aurora",
+            "product_id": "syn-001",
+            "objective": "Divulgar produto sintético",
+            "target_audience": "Adultos interessados em higiene pessoal",
+            "channels": [
+              "feed"
+            ],
+            "additional_instructions": "Demonstração de hackathon"
+          },
+          "pieces": [
+            {
+              "id": "1224c570-ff86-470e-97f1-4cd34eb47fe7",
+              "campaign_id": "f94e5bfd-212f-40e9-95dc-ac65d632f35c",
+              "channel": "feed",
+              "title": "Marca de demonstração: conheça Sabonete Brisa",
+              "subtitle": "Sabonete corporal fictício de uso diário. Cuidado com informação clara.",
+              "cta": "Conheça o produto",
+              "disclaimer": "Campanha fictícia. Dados sintéticos.",
+              "product_id": "syn-001",
+              "product_name": "Sabonete Brisa",
+              "price": "8.90",
+              "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+              "state": "draft",
+              "validations": [],
+              "reviews": []
+            }
+          ]
+        }
+      },
+      "validate": {
+        "method": "POST",
+        "path": "/campaigns/f94e5bfd-212f-40e9-95dc-ac65d632f35c/validate",
+        "status": 200,
+        "response": {
+          "id": "f94e5bfd-212f-40e9-95dc-ac65d632f35c",
+          "created_at": "2026-10-20T04:14:42.415827Z",
+          "briefing": {
+            "campaign_name": "Campanha Aurora",
+            "product_id": "syn-001",
+            "objective": "Divulgar produto sintético",
+            "target_audience": "Adultos interessados em higiene pessoal",
+            "channels": [
+              "feed"
+            ],
+            "additional_instructions": "Demonstração de hackathon"
+          },
+          "pieces": [
+            {
+              "id": "1224c570-ff86-470e-97f1-4cd34eb47fe7",
+              "campaign_id": "f94e5bfd-212f-40e9-95dc-ac65d632f35c",
+              "channel": "feed",
+              "title": "Marca de demonstração: conheça Sabonete Brisa",
+              "subtitle": "Sabonete corporal fictício de uso diário. Cuidado com informação clara.",
+              "cta": "Conheça o produto",
+              "disclaimer": "Campanha fictícia. Dados sintéticos.",
+              "product_id": "syn-001",
+              "product_name": "Sabonete Brisa",
+              "price": "8.90",
+              "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+              "state": "validated",
+              "validations": [
+                {
+                  "id": "5050fc2b-2338-4652-9ae3-f89151c9ca2f",
+                  "created_at": "2026-10-20T04:14:42.586568Z",
+                  "fingerprint": "7ddcbd827e4d04a152453367726f1d26452a9a0d30b8dcd7e8986e9c0519598d",
+                  "success": true,
+                  "results": [
+                    {
+                      "rule_code": "PRODUCT_EXISTS",
+                      "severity": "critical",
+                      "message": "OK: Produto deve existir no catálogo.",
+                      "field": "product_id",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Preço deve corresponder ao catálogo.",
+                      "field": "price",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "PRODUCT_NAME_MATCH",
+                      "severity": "critical",
+                      "message": "OK: O campo deve reproduzir o valor autorizado no catálogo.",
+                      "field": "product_name",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: O campo deve reproduzir o valor autorizado no catálogo.",
+                      "field": "authorized_offer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "product_id",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "product_name",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "price",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "authorized_offer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "CHANNEL_ALLOWED",
+                      "severity": "critical",
+                      "message": "OK: Canal deve ser permitido.",
+                      "field": "channel",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "CHARACTER_LIMIT",
+                      "severity": "critical",
+                      "message": "OK: Limite de 90 caracteres.",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "CHARACTER_LIMIT",
+                      "severity": "critical",
+                      "message": "OK: Limite de 240 caracteres.",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "CHARACTER_LIMIT",
+                      "severity": "critical",
+                      "message": "OK: Limite de 40 caracteres.",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_INFORMATION",
+                      "severity": "critical",
+                      "message": "OK: Inclua a informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_EXPRESSION",
+                      "severity": "warning",
+                      "message": "Falha: Inclua em um dos campos indicados: Confira os detalhes",
+                      "field": "cta",
+                      "passed": false
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: cura garantida",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: cura garantida",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: cura garantida",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: cura garantida",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: resultado garantido",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: resultado garantido",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: resultado garantido",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: resultado garantido",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                      "field": "disclaimer",
+                      "passed": true
+                    }
+                  ]
+                }
+              ],
+              "reviews": []
+            }
+          ]
+        }
+      },
+      "review": {
+        "method": "POST",
+        "path": "/pieces/1224c570-ff86-470e-97f1-4cd34eb47fe7/review",
+        "request": {
+          "decision": "approved",
+          "reviewer_id": "reviewer-demo"
+        },
+        "status": 200,
+        "response": {
+          "id": "1224c570-ff86-470e-97f1-4cd34eb47fe7",
+          "campaign_id": "f94e5bfd-212f-40e9-95dc-ac65d632f35c",
+          "channel": "feed",
+          "title": "Marca de demonstração: conheça Sabonete Brisa",
+          "subtitle": "Sabonete corporal fictício de uso diário. Cuidado com informação clara.",
+          "cta": "Conheça o produto",
+          "disclaimer": "Campanha fictícia. Dados sintéticos.",
+          "product_id": "syn-001",
+          "product_name": "Sabonete Brisa",
+          "price": "8.90",
+          "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+          "state": "approved",
+          "validations": [
+            {
+              "id": "5050fc2b-2338-4652-9ae3-f89151c9ca2f",
+              "created_at": "2026-10-20T04:14:42.586568Z",
+              "fingerprint": "7ddcbd827e4d04a152453367726f1d26452a9a0d30b8dcd7e8986e9c0519598d",
+              "success": true,
+              "results": [
+                {
+                  "rule_code": "PRODUCT_EXISTS",
+                  "severity": "critical",
+                  "message": "OK: Produto deve existir no catálogo.",
+                  "field": "product_id",
+                  "passed": true
+                },
+                {
+                  "rule_code": "PRICE_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Preço deve corresponder ao catálogo.",
+                  "field": "price",
+                  "passed": true
+                },
+                {
+                  "rule_code": "PRODUCT_NAME_MATCH",
+                  "severity": "critical",
+                  "message": "OK: O campo deve reproduzir o valor autorizado no catálogo.",
+                  "field": "product_name",
+                  "passed": true
+                },
+                {
+                  "rule_code": "OFFER_MATCH",
+                  "severity": "critical",
+                  "message": "OK: O campo deve reproduzir o valor autorizado no catálogo.",
+                  "field": "authorized_offer",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_FIELD",
+                  "severity": "critical",
+                  "message": "OK: Campo obrigatório.",
+                  "field": "title",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_FIELD",
+                  "severity": "critical",
+                  "message": "OK: Campo obrigatório.",
+                  "field": "subtitle",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_FIELD",
+                  "severity": "critical",
+                  "message": "OK: Campo obrigatório.",
+                  "field": "cta",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_FIELD",
+                  "severity": "critical",
+                  "message": "OK: Campo obrigatório.",
+                  "field": "disclaimer",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_FIELD",
+                  "severity": "critical",
+                  "message": "OK: Campo obrigatório.",
+                  "field": "product_id",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_FIELD",
+                  "severity": "critical",
+                  "message": "OK: Campo obrigatório.",
+                  "field": "product_name",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_FIELD",
+                  "severity": "critical",
+                  "message": "OK: Campo obrigatório.",
+                  "field": "price",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_FIELD",
+                  "severity": "critical",
+                  "message": "OK: Campo obrigatório.",
+                  "field": "authorized_offer",
+                  "passed": true
+                },
+                {
+                  "rule_code": "CHANNEL_ALLOWED",
+                  "severity": "critical",
+                  "message": "OK: Canal deve ser permitido.",
+                  "field": "channel",
+                  "passed": true
+                },
+                {
+                  "rule_code": "CHARACTER_LIMIT",
+                  "severity": "critical",
+                  "message": "OK: Limite de 90 caracteres.",
+                  "field": "title",
+                  "passed": true
+                },
+                {
+                  "rule_code": "CHARACTER_LIMIT",
+                  "severity": "critical",
+                  "message": "OK: Limite de 240 caracteres.",
+                  "field": "subtitle",
+                  "passed": true
+                },
+                {
+                  "rule_code": "CHARACTER_LIMIT",
+                  "severity": "critical",
+                  "message": "OK: Limite de 40 caracteres.",
+                  "field": "cta",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_INFORMATION",
+                  "severity": "critical",
+                  "message": "OK: Inclua a informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                  "field": "disclaimer",
+                  "passed": true
+                },
+                {
+                  "rule_code": "REQUIRED_EXPRESSION",
+                  "severity": "warning",
+                  "message": "Falha: Inclua em um dos campos indicados: Confira os detalhes",
+                  "field": "cta",
+                  "passed": false
+                },
+                {
+                  "rule_code": "FORBIDDEN_EXPRESSION",
+                  "severity": "critical",
+                  "message": "OK: O campo não deve conter: cura garantida",
+                  "field": "title",
+                  "passed": true
+                },
+                {
+                  "rule_code": "FORBIDDEN_EXPRESSION",
+                  "severity": "critical",
+                  "message": "OK: O campo não deve conter: cura garantida",
+                  "field": "subtitle",
+                  "passed": true
+                },
+                {
+                  "rule_code": "FORBIDDEN_EXPRESSION",
+                  "severity": "critical",
+                  "message": "OK: O campo não deve conter: cura garantida",
+                  "field": "cta",
+                  "passed": true
+                },
+                {
+                  "rule_code": "FORBIDDEN_EXPRESSION",
+                  "severity": "critical",
+                  "message": "OK: O campo não deve conter: cura garantida",
+                  "field": "disclaimer",
+                  "passed": true
+                },
+                {
+                  "rule_code": "FORBIDDEN_EXPRESSION",
+                  "severity": "critical",
+                  "message": "OK: O campo não deve conter: resultado garantido",
+                  "field": "title",
+                  "passed": true
+                },
+                {
+                  "rule_code": "FORBIDDEN_EXPRESSION",
+                  "severity": "critical",
+                  "message": "OK: O campo não deve conter: resultado garantido",
+                  "field": "subtitle",
+                  "passed": true
+                },
+                {
+                  "rule_code": "FORBIDDEN_EXPRESSION",
+                  "severity": "critical",
+                  "message": "OK: O campo não deve conter: resultado garantido",
+                  "field": "cta",
+                  "passed": true
+                },
+                {
+                  "rule_code": "FORBIDDEN_EXPRESSION",
+                  "severity": "critical",
+                  "message": "OK: O campo não deve conter: resultado garantido",
+                  "field": "disclaimer",
+                  "passed": true
+                },
+                {
+                  "rule_code": "TEXT_PRICE_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                  "field": "title",
+                  "passed": true
+                },
+                {
+                  "rule_code": "TEXT_OFFER_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                  "field": "title",
+                  "passed": true
+                },
+                {
+                  "rule_code": "TEXT_PRICE_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                  "field": "subtitle",
+                  "passed": true
+                },
+                {
+                  "rule_code": "TEXT_OFFER_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                  "field": "subtitle",
+                  "passed": true
+                },
+                {
+                  "rule_code": "TEXT_PRICE_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                  "field": "cta",
+                  "passed": true
+                },
+                {
+                  "rule_code": "TEXT_OFFER_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                  "field": "cta",
+                  "passed": true
+                },
+                {
+                  "rule_code": "TEXT_PRICE_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                  "field": "disclaimer",
+                  "passed": true
+                },
+                {
+                  "rule_code": "TEXT_OFFER_MATCH",
+                  "severity": "critical",
+                  "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                  "field": "disclaimer",
+                  "passed": true
+                }
+              ]
+            }
+          ],
+          "reviews": [
+            {
+              "decision": "approved",
+              "reviewer_id": "reviewer-demo",
+              "comment": null,
+              "id": "5953891e-c1a1-4ea3-989c-a9da1fdba0a1",
+              "created_at": "2026-10-20T04:14:42.648835Z",
+              "fingerprint": "7ddcbd827e4d04a152453367726f1d26452a9a0d30b8dcd7e8986e9c0519598d"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "falha_critica_bloqueia",
+      "configuration_overrides": {
+        "generation": {
+          "templates": {
+            "feed": {
+              "title": "Cura garantida"
+            }
+          }
+        }
+      },
+      "generate": {
+        "method": "POST",
+        "path": "/campaigns/generate",
+        "request": {
+          "campaign_name": "Campanha Aurora",
+          "product_id": "syn-001",
+          "objective": "Divulgar produto sintético",
+          "target_audience": "Adultos interessados em higiene pessoal",
+          "channels": [
+            "feed"
+          ],
+          "additional_instructions": "Demonstração de hackathon"
+        },
+        "status": 201,
+        "response": {
+          "id": "cec7de61-b5bc-4c6a-bf12-dbec5891f229",
+          "created_at": "2026-10-20T04:14:43.152308Z",
+          "briefing": {
+            "campaign_name": "Campanha Aurora",
+            "product_id": "syn-001",
+            "objective": "Divulgar produto sintético",
+            "target_audience": "Adultos interessados em higiene pessoal",
+            "channels": [
+              "feed"
+            ],
+            "additional_instructions": "Demonstração de hackathon"
+          },
+          "pieces": [
+            {
+              "id": "1f024fe4-bb06-4c61-a8e4-f5a5e3723d54",
+              "campaign_id": "cec7de61-b5bc-4c6a-bf12-dbec5891f229",
+              "channel": "feed",
+              "title": "Cura garantida",
+              "subtitle": "Sabonete corporal fictício de uso diário. Cuidado com informação clara.",
+              "cta": "Conheça o produto",
+              "disclaimer": "Campanha fictícia. Dados sintéticos.",
+              "product_id": "syn-001",
+              "product_name": "Sabonete Brisa",
+              "price": "8.90",
+              "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+              "state": "draft",
+              "validations": [],
+              "reviews": []
+            }
+          ]
+        }
+      },
+      "validate": {
+        "method": "POST",
+        "path": "/campaigns/cec7de61-b5bc-4c6a-bf12-dbec5891f229/validate",
+        "status": 200,
+        "response": {
+          "id": "cec7de61-b5bc-4c6a-bf12-dbec5891f229",
+          "created_at": "2026-10-20T04:14:43.152308Z",
+          "briefing": {
+            "campaign_name": "Campanha Aurora",
+            "product_id": "syn-001",
+            "objective": "Divulgar produto sintético",
+            "target_audience": "Adultos interessados em higiene pessoal",
+            "channels": [
+              "feed"
+            ],
+            "additional_instructions": "Demonstração de hackathon"
+          },
+          "pieces": [
+            {
+              "id": "1f024fe4-bb06-4c61-a8e4-f5a5e3723d54",
+              "campaign_id": "cec7de61-b5bc-4c6a-bf12-dbec5891f229",
+              "channel": "feed",
+              "title": "Cura garantida",
+              "subtitle": "Sabonete corporal fictício de uso diário. Cuidado com informação clara.",
+              "cta": "Conheça o produto",
+              "disclaimer": "Campanha fictícia. Dados sintéticos.",
+              "product_id": "syn-001",
+              "product_name": "Sabonete Brisa",
+              "price": "8.90",
+              "authorized_offer": "Preço sintético de demonstração, sem desconto adicional.",
+              "state": "draft",
+              "validations": [
+                {
+                  "id": "f38b8f0f-9218-4acf-b01c-9f56709d699e",
+                  "created_at": "2026-10-20T04:14:43.229171Z",
+                  "fingerprint": "460d5c46dcb6a6f1c8181b407ca8e5bc268fdd4c9969c351ad81f2134c214981",
+                  "success": false,
+                  "results": [
+                    {
+                      "rule_code": "PRODUCT_EXISTS",
+                      "severity": "critical",
+                      "message": "OK: Produto deve existir no catálogo.",
+                      "field": "product_id",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Preço deve corresponder ao catálogo.",
+                      "field": "price",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "PRODUCT_NAME_MATCH",
+                      "severity": "critical",
+                      "message": "OK: O campo deve reproduzir o valor autorizado no catálogo.",
+                      "field": "product_name",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: O campo deve reproduzir o valor autorizado no catálogo.",
+                      "field": "authorized_offer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "product_id",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "product_name",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "price",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_FIELD",
+                      "severity": "critical",
+                      "message": "OK: Campo obrigatório.",
+                      "field": "authorized_offer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "CHANNEL_ALLOWED",
+                      "severity": "critical",
+                      "message": "OK: Canal deve ser permitido.",
+                      "field": "channel",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "CHARACTER_LIMIT",
+                      "severity": "critical",
+                      "message": "OK: Limite de 90 caracteres.",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "CHARACTER_LIMIT",
+                      "severity": "critical",
+                      "message": "OK: Limite de 240 caracteres.",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "CHARACTER_LIMIT",
+                      "severity": "critical",
+                      "message": "OK: Limite de 40 caracteres.",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "REQUIRED_INFORMATION",
+                      "severity": "critical",
+                      "message": "OK: Inclua a informação obrigatória: Campanha fictícia. Dados sintéticos.",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "Falha: O campo não deve conter: cura garantida",
+                      "field": "title",
+                      "passed": false
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: cura garantida",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: cura garantida",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: cura garantida",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: resultado garantido",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: resultado garantido",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: resultado garantido",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "FORBIDDEN_EXPRESSION",
+                      "severity": "critical",
+                      "message": "OK: O campo não deve conter: resultado garantido",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                      "field": "title",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                      "field": "subtitle",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                      "field": "cta",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_PRICE_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.",
+                      "field": "disclaimer",
+                      "passed": true
+                    },
+                    {
+                      "rule_code": "TEXT_OFFER_MATCH",
+                      "severity": "critical",
+                      "message": "OK: Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.",
+                      "field": "disclaimer",
+                      "passed": true
+                    }
+                  ]
+                }
+              ],
+              "reviews": []
+            }
+          ]
+        }
+      },
+      "review": {
+        "method": "POST",
+        "path": "/pieces/1f024fe4-bb06-4c61-a8e4-f5a5e3723d54/review",
+        "request": {
+          "decision": "approved",
+          "reviewer_id": "reviewer-demo"
+        },
+        "status": 409,
+        "response": {
+          "error": {
+            "code": "APPROVAL_BLOCKED",
+            "message": "Aprovação exige validação atual bem-sucedida e estado validated.",
+            "details": []
+          }
+        }
+      }
+    }
+  ]
+}

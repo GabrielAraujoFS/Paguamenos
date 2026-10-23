@@ -47,8 +47,9 @@ Na pasta `backend`, execute os testes:
 Consulte o [guia do backend](backend/README.md) para configuração detalhada,
 estados e roteiro de testes manuais.
 
-Verificação de preparação: Python 3.13.1, **27 testes passaram**. Dois avisos foram
-identificados neste ambiente: `StarletteDeprecationWarning` pelo uso de HTTPX
+Os 27 testes originais são preservados, com novos testes de configuração,
+expressões, severidades e geração. Dois avisos conhecidos neste ambiente são:
+`StarletteDeprecationWarning` pelo uso de HTTPX
 0.28.1 com o TestClient do Starlette 1.8.0 e `PytestCacheWarning` por falta de
 permissão de escrita no cache local. Nenhum invalida os testes. A compatibilidade
 do cliente de testes deve ser revista antes de atualizar dependências; não foi
@@ -70,11 +71,13 @@ para Windows; em Linux/macOS use `python3.13` e o executável `.venv/bin/python`
   [exemplos completos](backend/examples/responses.json).
 - Funciona: catálogo sintético, geração textual mock, validação objetiva,
   aprovação/rejeição humana, histórico e persistência em SQLite.
+- Configuração textual de marca e campanha, expressões por canal, alertas e
+  checagem comercial nos formatos suportados: [guia](backend/docs/configuracao.md).
 - Pendente: frontend, integração React, decisões de Emily sobre regras e dados
   autorizados e escolha/integração futura do provedor de IA.
 
-As regras são provisórias e sintéticas; não representam regras oficiais da Pague
-Menos. Não há publicação automática. Preços/ofertas vêm do catálogo, e os preços
+As regras são provisórias e sintéticas; não representam regras oficiais de marcas
+reais. Não há publicação automática. Preços/ofertas vêm do catálogo, e os preços
 trafegam como strings decimais. Alterações de contrato devem ser alinhadas com
 Alexsandro antes de integrar.
 

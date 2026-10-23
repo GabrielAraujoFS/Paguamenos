@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from app.api import campaigns, products, reviews
 from app.database import Base, make_engine, make_session_factory
 from app.schemas import ErrorResponse
+from app.schemas.configuration import parse_rules
 from app.services.catalog import Catalog, load_rules
 from app.services.generation import MockGenerationService
 
@@ -37,8 +38,15 @@ def create_app(database_url=None, generator=None, catalog=None, rules_loader=Non
     application.state.engine = engine
     application.state.sessions = make_session_factory(engine)
     application.state.catalog = catalog if catalog is not None else Catalog()
-    application.state.generator = generator if generator is not None else MockGenerationService()
-    application.state.rules_loader = rules_loader if rules_loader is not None else load_rules
+    source_rules = rules_loader if rules_loader is not None else load_rules
+
+    def configured_rules():
+        return parse_rules(source_rules()).model_dump(mode='json')
+
+    # Fail early on malformed local configuration; validate changes on every read.
+    configured_rules()
+    application.state.rules_loader = configured_rules
+    application.state.generator = generator if generator is not None else MockGenerationService(configured_rules)
     application.add_middleware(CORSMiddleware,
         allow_origins=local_origins(cors_origins if cors_origins is not None else os.getenv("CORS_ORIGINS", "http://localhost:5173")),
         allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
