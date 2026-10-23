@@ -73,8 +73,13 @@ para Windows; em Linux/macOS use `python3.13` e o executável `.venv/bin/python`
   aprovação/rejeição humana, histórico e persistência em SQLite.
 - Configuração textual de marca e campanha, expressões por canal, alertas e
   checagem comercial nos formatos suportados: [guia](backend/docs/configuracao.md).
+- Gemini opcional por configuração, com mock como padrão:
+  [configuração, nível gratuito e limitações](backend/docs/geracao-ia.md).
+- Sprint 3: geração real com Gemini, validação e aprovação humana verificadas
+  pelo responsável pelo backend no Swagger; 117 testes automatizados cobrem
+  também falhas simuladas e bloqueios críticos, sem chamadas externas.
 - Pendente: frontend, integração React, decisões de Emily sobre regras e dados
-  autorizados e escolha/integração futura do provedor de IA.
+  autorizados.
 
 As regras são provisórias e sintéticas; não representam regras oficiais de marcas
 reais. Não há publicação automática. Preços/ofertas vêm do catálogo, e os preços

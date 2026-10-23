@@ -4,6 +4,22 @@ from app.schemas.configuration import parse_rules
 from app.services.catalog import load_rules
 
 
+class GenerationError(Exception):
+    """Safe public failure, without upstream response bodies or credentials."""
+    def __init__(self, code: str, message: str):
+        self.code, self.message = code, message
+        super().__init__(message)
+
+
+def configured_generator(rules_loader):
+    from app.settings import GenerationConfig
+    settings = GenerationConfig.from_environment()
+    if settings.provider == 'mock':
+        return MockGenerationService(rules_loader)
+    from app.services.gemini import GeminiGenerationService
+    return GeminiGenerationService(settings, rules_loader)
+
+
 class GenerationService(Protocol):
     """Providers return copy only, never commercial fields or review decisions."""
     def generate(self, briefing: Briefing, product: Product) -> list[GeneratedText]: ...
