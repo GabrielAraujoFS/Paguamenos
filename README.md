@@ -14,10 +14,41 @@ backend/
   examples/     briefing, respostas e OpenAPI exportado
   docs/         orientação de integração
   README.md     instalação, execução e roteiro completo do Swagger
+paguemenos-FRONT-END/  interface React + TypeScript
+compose.yaml            API, frontend e volume SQLite
 ```
 
-O frontend React será incorporado por Alexsandro em `frontend/`; essa pasta ainda
-não existe. A documentação específica permanece junto ao backend.
+O frontend está em `paguemenos-FRONT-END/`. A documentação específica permanece
+junto a cada serviço.
+
+## Executar todo o projeto com Docker
+
+Com o Docker Desktop ativo, execute na raiz:
+
+```powershell
+docker compose up --build -d
+```
+
+Se o projeto estiver no OneDrive e o build falhar com `invalid file request`,
+use `./scripts/compose-up.ps1` no PowerShell. O script copia os contextos de build
+para uma pasta temporária, executa o Compose e apaga a cópia ao terminar. Isso
+evita os pontos de nova análise criados pelo OneDrive em arquivos do projeto.
+
+- Interface: [http://localhost:5173](http://localhost:5173)
+- Swagger da API: [http://localhost:8000/docs](http://localhost:8000/docs)
+- A interface acessa a API pelo proxy `/api` do Nginx; o navegador não precisa
+  chamar a porta 8000 diretamente.
+- O banco SQLite fica no volume `backend_data` e sobrevive a `docker compose down`.
+- Para parar: `docker compose down`. Para apagar também os dados locais do volume:
+  `docker compose down -v`.
+
+O provedor padrão é `mock`, sem chave ou serviço externo. Para usar Gemini, copie
+`.env.example` para `.env`, defina `GENERATION_PROVIDER=gemini` e preencha
+`GEMINI_API_KEY`; depois recrie os contêineres com o comando acima (ou com o
+script, se estiver no OneDrive).
+O arquivo `.env` é ignorado pelo Git. As portas 5173 e 8000 são publicadas somente
+em `127.0.0.1`; se estiverem ocupadas, ajuste o lado esquerdo dos mapeamentos em
+`compose.yaml`.
 
 ## Executar o backend
 

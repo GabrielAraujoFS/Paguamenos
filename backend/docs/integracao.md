@@ -24,6 +24,68 @@ incluindo IDs ilustrativos. IDs mudam a cada execução; sempre use os da respos
 10. Origens CORS explicitamente configuradas; padrão http://localhost:5173.
     POST JSON com Content-Type: application/json; nenhum token no MVP.
 
+## Histórico paginado de campanhas
+
+`GET /campaigns` retorna `CampaignPage`. No backend esta é a rota REST completa;
+no ambiente Compose, o Nginx aceita `GET /api/campaigns` e remove `/api/` ao
+encaminhar a chamada. Assim, o frontend pode usar `GET /api/campaigns` na mesma
+origem em que a interface foi carregada (ou `http://127.0.0.1:8000/campaigns`
+quando chamar o backend diretamente). A rota também está no Swagger (`/docs`) e
+no OpenAPI (`/openapi.json`).
+
+```ts
+interface CampaignPage {
+  items: Campaign[]; total: number; page: number;
+  page_size: number; total_pages: number;
+}
+```
+
+Cada `Campaign` de `items` tem a mesma estrutura de `GET /campaigns/{campaign_id}`:
+`id` UUID textual, `created_at` UTC ISO 8601, `briefing` completo e `pieces`
+com conteúdo, estado, validações e revisões. Não existe status agregado de campanha.
+O exemplo completo está em `../examples/responses.json`, chave `list_campaigns`.
+
+Parâmetros opcionais: `page` inteiro >= 1 (padrão 1), `page_size` inteiro entre
+1 e 100 (padrão 20), `status` em `draft|validated|approved|rejected`, `channel`
+em `feed|story|banner` e `search` texto de ao menos um caractere. `status`
+corresponde ao estado de **qualquer peça**; `channel` corresponde ao canal de
+qualquer peça, possivelmente outra peça da mesma campanha. `search` procura
+substring sem diferenciar caixa em nome, objetivo e público-alvo do briefing;
+espaços nas bordas são removidos e texto só de espaços desativa a busca. As
+campanhas são ordenadas por data de criação decrescente e ID decrescente como
+desempate. `total` considera os filtros; não há duplicatas. Banco vazio gera
+`items: []`, `total: 0`, `total_pages: 0`. Página além do fim gera `items: []`
+com `total` e `total_pages` preservados. Entradas inválidas retornam 422 no envelope
+`INVALID_REQUEST`; erros inesperados de banco não têm envelope garantido.
+
+Para percorrer todo o histórico, faça requisições de `page=1` até
+`page=total_pages`, mantendo `page_size` e filtros iguais. Use
+`GET /campaigns/{campaign_id}` com um ID obtido da lista para abrir os detalhes;
+ID inexistente retorna 404 `CAMPAIGN_NOT_FOUND`. A listagem é somente leitura e
+não recalcula estado; o detalhe existente pode invalidar um estado antigo se
+produto/regras mudaram. Nenhum endpoint gera conteúdo durante essas consultas.
+
+Exemplo:
+
+```http
+GET /api/campaigns?page=1&page_size=20&status=approved&channel=feed
+Accept: application/json
+```
+
+`Accept: application/json` é recomendado; não há body, token, cookie ou
+`Authorization` exigido. A rota responde 200 com `CampaignPage`; parâmetros
+inválidos respondem 422 no envelope `error` comum. A lista vazia retorna 200
+com `items: []`, `total: 0`, `page: 1`, `page_size: 20` e `total_pages: 0`.
+Os itens usam o schema público `Campaign` (`id`, `created_at`, `briefing` e
+`pieces`); status é por peça e não há status agregado nem contador calculado.
+Uma resposta completa e atualizada por execução está em
+`../examples/responses.json`, chave `list_campaigns`.
+
+Em desenvolvimento direto, a origem padrão permitida por CORS é
+`http://localhost:5173`. As origens locais são explícitas via `CORS_ORIGINS`;
+não se habilitam origens arbitrárias. Pelo proxy Nginx `/api`, a chamada é
+same-origin e não depende de CORS.
+
 ## Fluxo React
 
 GET /products → selecionar produto → POST /campaigns/generate →
@@ -51,13 +113,14 @@ if (!response.ok) throw new Error(body.error.message);
 ```
 
 Preços são dados autorizados de exibição, não saída da IA.
-Use strings decimais para preservar centavos. No MVP não há paginação, edição,
-listagem de campanhas ou status agregado da campanha.
+Use strings decimais para preservar centavos. Há paginação na listagem de
+campanhas; ainda não há edição nem status agregado da campanha.
 
 ## Atualização configurável: o que muda para o frontend
 
-Os sete endpoints e todos os campos de requisição/resposta permanecem iguais;
-o teste de contrato compara o OpenAPI atual ao arquivo original. Não há endpoint
+Os contratos dos sete endpoints anteriores permanecem iguais; a listagem é o
+oitavo endpoint. O teste de contrato compara o OpenAPI atual ao snapshot exportado.
+Não há endpoint
 de marca ou campos novos no briefing. Uma peça por canal solicitado e um único
 `target_audience` por campanha continuam sendo o comportamento vigente.
 
@@ -89,7 +152,7 @@ outras implementações injetadas. Não dependa de uma lista fechada com mock/cu
 
 ## Integração Gemini opcional
 
-Os sete endpoints e o OpenAPI permanecem iguais. Geração pode demorar: mantenha
+Os contratos de geração anteriores permanecem iguais. Geração pode demorar: mantenha
 indicador de espera e evite envios duplicados. `subtitle` é a legenda; permanece
 uma peça por canal. Todos os erros previstos da integração usam 502 no envelope
 existente, incluindo GENERATION_AUTH_ERROR, GENERATION_RATE_LIMIT,

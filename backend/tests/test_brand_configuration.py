@@ -340,9 +340,9 @@ def test_invalid_provider_output_has_structured_502(environment, bad_result):
     assert response.json()['error']['code'] == 'GENERATION_CONTRACT_ERROR'
 
 
-def test_existing_openapi_and_response_contracts_are_unchanged(environment):
+def test_openapi_snapshot_and_existing_response_contracts(environment):
     client, _, _ = environment
-    # The committed OpenAPI snapshot describes the original seven endpoints.
+    # The committed OpenAPI snapshot includes the campaign listing endpoint.
     baseline = json.loads((Path(__file__).parents[1] / 'examples' / 'openapi.json').read_text(encoding='utf-8'))
     assert client.get('/openapi.json').json() == baseline
     campaign = generate(client)

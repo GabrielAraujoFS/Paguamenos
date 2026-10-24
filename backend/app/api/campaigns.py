@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload
 from pydantic import ValidationError
-from app.api.dependencies import session, generation_session
+from app.api.dependencies import session, generation_session, read_session
 import logging
 from time import monotonic
 from uuid import uuid4
 from app.services.generation import GenerationError
 from app.models import CampaignModel, PieceModel
-from app.schemas import Briefing, Campaign, GeneratedText
+from app.schemas import Briefing, Campaign, CampaignPage, Channel, ErrorResponse, GeneratedText, PieceState
 from app.services.workflow import campaign_output, fail, invalidate_stale, validate_piece
 router = APIRouter(tags=["campaigns"])
 logger = logging.getLogger(__name__)
@@ -17,6 +19,60 @@ def find_campaign(db, campaign_id):
     if campaign is None:
         fail(404, "CAMPAIGN_NOT_FOUND", "Campanha não encontrada.")
     return campaign
+
+@router.get(
+    "/campaigns",
+    response_model=CampaignPage,
+    summary="Listar campanhas",
+    description=(
+        "Retorna campanhas persistidas em ordem decrescente de criação, com briefing, "
+        "peças e históricos. Aceita paginação e filtros opcionais. Esta consulta é "
+        "somente leitura. Não exige autenticação no MVP."
+    ),
+    responses={422: {"model": ErrorResponse, "description": "Parâmetros de consulta inválidos."}},
+)
+def list_campaigns(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    status: PieceState | None = None,
+    channel: Channel | None = None,
+    search: str | None = Query(default=None, min_length=1),
+    db: Session = Depends(read_session),
+):
+    filters = []
+    if status is not None:
+        filters.append(select(PieceModel.id).where(
+            PieceModel.campaign_id == CampaignModel.id,
+            PieceModel.state == status.value,
+        ).exists())
+    if channel is not None:
+        filters.append(select(PieceModel.id).where(
+            PieceModel.campaign_id == CampaignModel.id,
+            PieceModel.content["channel"].as_string() == channel.value,
+        ).exists())
+    if search is not None:
+        term = search.strip()
+        if term:
+            literal = term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            pattern = f"%{literal}%"
+            filters.append(
+                CampaignModel.briefing["campaign_name"].as_string().ilike(pattern, escape="\\")
+                | CampaignModel.briefing["objective"].as_string().ilike(pattern, escape="\\")
+                | CampaignModel.briefing["target_audience"].as_string().ilike(pattern, escape="\\")
+            )
+    total = db.scalar(select(func.count(CampaignModel.id)).where(*filters)) or 0
+    campaigns = db.scalars(
+        select(CampaignModel).where(*filters)
+        .order_by(CampaignModel.created_at.desc(), CampaignModel.id.desc())
+        .limit(page_size).offset((page - 1) * page_size)
+        .options(
+            selectinload(CampaignModel.pieces).selectinload(PieceModel.validations),
+            selectinload(CampaignModel.pieces).selectinload(PieceModel.reviews),
+        )
+    ).all()
+    return {"items": [campaign_output(campaign) for campaign in campaigns],
+            "total": total, "page": page, "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size}
 
 @router.post("/campaigns/generate", response_model=Campaign, status_code=201)
 def generate(briefing: Briefing, request: Request, db: Session = Depends(generation_session)):

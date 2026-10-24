@@ -53,6 +53,7 @@ com identificadores de revisão simulados e sem autenticação.
 | GET | /products | 200 | Lista de produtos |
 | GET | /products/{product_id} | 200 | Produto |
 | POST | /campaigns/generate | 201 | Campanha completa com peças draft |
+| GET | /campaigns | 200 | Página de campanhas completas, incluindo peças e históricos |
 | GET | /campaigns/{campaign_id} | 200 | Campanha, validações e revisões |
 | POST | /campaigns/{campaign_id}/validate | 200 | Campanha com nova validação por peça |
 | POST | /pieces/{piece_id}/review | 200 | Peça com decisão e histórico |
@@ -62,6 +63,45 @@ Não há corpo na validação. O estado pertence à peça, e não à campanha.
 502 indica incompatibilidade dos canais devolvidos pelo gerador.
 Erros usam `{"error":{"code":"...","message":"...","details":[]}}`.
 Os tipos e campos completos estão em OpenAPI.
+
+### Histórico de campanhas
+
+`GET /campaigns?page=1&page_size=20` lê o SQLite e retorna
+`{items: Campaign[], total: int, page: int, page_size: int, total_pages: int}`.
+`page` começa em 1; `page_size` vai de 1 a 100 (padrão 20). Os itens são campanhas
+completas, com briefing, peças, validações e decisões, ordenadas por `created_at`
+decrescente e, em empate, por `id` decrescente. Uma página além do fim retorna
+`items: []`, mantendo `total` e `total_pages`; banco vazio retorna `total_pages: 0`.
+Percorra `page=1` até `page=total_pages` para recuperar todo o histórico. Não há
+limite global de campanhas recuperáveis.
+
+Filtros opcionais: `status` (`draft`, `validated`, `approved`, `rejected`) seleciona
+campanhas com **alguma peça** nesse estado; `channel` (`feed`, `story`, `banner`)
+seleciona campanhas com alguma peça nesse canal; `search` faz busca de substring
+sem diferenciar maiúsculas/minúsculas no nome, objetivo ou público-alvo do briefing.
+Filtros de estado e canal são independentes: podem corresponder a peças diferentes
+da mesma campanha. Espaços nas bordas de `search` são ignorados; valor só de espaços
+equivale a ausência de busca. O total é calculado após os filtros. Parâmetros
+inválidos retornam 422 `INVALID_REQUEST`. Sem filtros, todos os estados entram.
+A listagem não recalcula validações nem altera estados; para consultar e atualizar
+o estado corrente de uma campanha específica, use `GET /campaigns/{campaign_id}`.
+
+Exemplo abreviado (cada item real inclui a campanha inteira):
+
+```json
+{"items":[{"id":"55e27e3b-0e89-4347-b716-63b85cf7cff4","created_at":"2026-10-20T04:14:41.055582Z","briefing":{"campaign_name":"Campanha Aurora","product_id":"syn-001","objective":"Divulgar produto sintético","target_audience":"Adultos interessados em higiene pessoal","channels":["feed","story","banner"],"additional_instructions":"Demonstração de hackathon"},"pieces":[{"id":"dc6e6903-ea68-478a-9870-daf816f74e21","campaign_id":"55e27e3b-0e89-4347-b716-63b85cf7cff4","channel":"feed","title":"Marca de demonstração: conheça Sabonete Brisa","subtitle":"Sabonete corporal fictício de uso diário. Cuidado com informação clara.","cta":"Conheça o produto","disclaimer":"Campanha fictícia. Dados sintéticos.","product_id":"syn-001","product_name":"Sabonete Brisa","price":"8.90","authorized_offer":"Preço sintético de demonstração, sem desconto adicional.","state":"draft","validations":[],"reviews":[]}]}],"total":1,"page":1,"page_size":20,"total_pages":1}
+```
+
+O exemplo acima mostra só uma das peças para caber nesta seção; o exemplo completo
+da listagem está em `examples/responses.json`. IDs e datas desse arquivo são
+ilustrativos e vêm de respostas do mock.
+
+O caminho do banco **local**, ao executar a partir de `backend`, é
+`backend/creative_factory.db` (`sqlite:///./creative_factory.db`). No Compose é
+`/data/creative_factory.db` dentro do contêiner, preservado no volume nomeado
+`backend_data` (`sqlite:////data/creative_factory.db`). São bancos diferentes;
+não há migração ou cópia automática. Para identificar o banco ativo, confira
+`DATABASE_URL` no ambiente do processo/contêiner, sem expor outras variáveis.
 
 ## Como testar no Swagger
 
@@ -91,6 +131,7 @@ Os tipos e campos completos estão em OpenAPI.
 9. Consulte `GET /campaigns/{campaign_id}` para verificar o histórico persistido.
 10. Para rejeitar outra peça, use `{"decision":"rejected","reviewer_id":"revisor-demo"}`.
     A rejeição é permitida em qualquer estado. Aprovar uma rejeitada exige nova validação.
+11. Execute `GET /campaigns?page=1&page_size=20` para ver o histórico paginado.
 
 ## Estados e validação
 

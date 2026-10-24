@@ -22,3 +22,8 @@ def session(request: Request):
         except Exception:
             db.rollback()
             raise
+
+def read_session(request: Request):
+    # Read-only handlers do not need BEGIN IMMEDIATE or a write transaction.
+    with request.app.state.sessions() as db:
+        yield db
