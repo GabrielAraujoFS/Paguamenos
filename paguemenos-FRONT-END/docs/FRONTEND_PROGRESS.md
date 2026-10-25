@@ -21,9 +21,9 @@
 - [ ] Fechar integração da etapa 0 com backend vivo no navegador (`GET /health`, `GET /products` e CORS); o acesso HTTP ao backend não pôde ser confirmado nesta sessão.
 - [x] Etapa 1 — Catálogo e briefing: listagem/detalhe via API, seleção de produto, formulário validado, envio de `GenerateRequest` e confirmação com ID da campanha.
 - [x] Listagem de campanhas — rota `/campanhas`, pesquisa, filtro por estado de peça, paginação e atualização via `GET /campaigns`.
-- [ ] Etapa 2 — Geração e consulta por ID.
-- [ ] Etapa 3 — Validação da campanha.
-- [ ] Etapa 4 — Revisão por peça.
+- [x] Etapa 2 — Geração e consulta por ID: cartões clicáveis e link após geração abrem `/campaigns/:campaignId`, com briefing e todas as peças.
+- [x] Etapa 3 — Validação da campanha: POST sem body, estado atual, resultados por severidade e histórico.
+- [x] Etapa 4 — Revisão por peça: identificação, comentário, confirmação, bloqueio de aprovação incompatível e atualização do cache; 409 reconsulta a campanha.
 - [ ] Etapa 5 — Responsividade, acessibilidade e estados de erro.
 - [ ] Etapa 6 — Conveniência local opcional, se aprovada como útil.
 
@@ -41,7 +41,7 @@
 - [x] Axios contra backend temporário em HTTP: 200 para saúde, catálogo e detalhe; 201 para geração; preço permaneceu string e peça retornou `draft`.
 - [ ] Teste integrado e inspeção visual no navegador com backend mock — o navegador incorporado retornou `ERR_CONNECTION_TIMED_OUT` para `http://localhost:5173`; checagens HTTP e CORS isoladas passaram.
 - [x] Verificar CORS e igualdade do OpenAPI vivo com o snapshot por TestClient.
-- [ ] Testes de atualização de cache — previstos para validação/revisão, que alteram campanha.
+- [x] Testes de atualização de cache — validação substitui campanha; revisão substitui apenas a peça retornada; conflito 409 reconsulta o estado.
 - [ ] Teste responsivo e de acessibilidade — interface ainda não implementada.
 
 ## Pendências e bloqueios documentados
@@ -54,6 +54,20 @@
 - [ ] Definir hospedagem e CORS de produção com o backend; a configuração documentada é local.
 
 ## Registro de alterações
+
+### Fluxo de gerenciamento de campanhas — 2026-10-25
+
+- Cartões navegáveis e link após geração para `/campaigns/:campaignId`; detalhe consulta a API, apresenta briefing e conteúdo integral de cada peça.
+- Validação sem body, última execução e histórico de resultados, severidades e estado atual do servidor. HTTP 200 com bloqueios críticos permanece resultado de negócio, sem marcar aprovação.
+- Revisão por peça com React Hook Form/Zod, identificação de 1–100 caracteres, comentário de até 2000, confirmação explícita, proteção de envios concorrentes e ausência de retry automático. Aprovação depende de estado `validated` e última validação bem-sucedida; rejeição é permitida nos estados documentados.
+- Cache por campanha atualizado com respostas reais; listas invalidadas após operações; 409 força nova consulta. Falha na consulta após conflito mostra erro e impede ações sobre dados antigos. Erro de rede orienta atualizar antes de repetir uma operação cujo resultado não foi confirmado.
+- Contratos confrontados com as rotas do OpenAPI vivo em `127.0.0.1:8000`; sem novos endpoints nem alteração de backend, OpenAPI ou Docker.
+- Dependências instaladas com `npm ci --no-audit --no-fund`, sem mudança no lockfile. Verificações usaram o Node 24.22.1 fornecido pelo aplicativo; Node 22.14 do terminal é inferior aos requisitos de algumas dependências atuais.
+- TypeScript (`tsc -b`), build de produção (`vite build`) e lint (`eslint .`) passaram.
+- Suíte Vitest: **17 testes passaram, 1 teste opt-in ignorado**. Execução final com `vitest run --maxWorkers=1 --testTimeout=20000`; execução concorrente com o build havia provocado timeouts em testes preexistentes. Nenhum teste preexistente foi alterado.
+- Teste opt-in HTTP: **1 passou**, executado separadamente com `ZYNTRA_TEST_LIVE_API=1` e `VITE_API_BASE_URL=http://127.0.0.1:8769`. Usa os serviços frontend contra FastAPI temporário, provedor mock explícito e SQLite descartável: catálogo, geração de duas peças, aprovação bloqueada antes da validação (409), validação, aprovação, rejeição, persistência e busca. Não usa Gemini nem banco da demonstração.
+- Fixtures de componentes cobrem navegação pelo cartão, conteúdo completo, regras críticas e avisos, revisão confirmada/cancelada, cache, identificação obrigatória, conflito 409, erros 404/422/502, rede e proteção contra duplo envio. Teste de serviços confirma URLs com IDs codificados e POST de validação sem body.
+- Pendente: inspeção visual e fluxo manual no navegador em telas pequenas e grandes; os testes HTTP não equivalem a um teste completo de navegador nem a uma avaliação da geração Gemini.
 
 ### Divergência confirmada antes da tela de campanhas (2026-10-24)
 

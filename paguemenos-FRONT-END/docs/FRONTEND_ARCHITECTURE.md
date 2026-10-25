@@ -1,6 +1,6 @@
 # Arquitetura proposta do frontend
 
-Estado: etapas de fundação, catálogo, briefing e listagem de campanhas implementadas. Base documental: [API_CONTRACT.md](API_CONTRACT.md), [FRONTEND_HANDOFF.md](FRONTEND_HANDOFF.md), [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md) e [openapi.json](openapi.json). O contrato descreve o backend `0.1.0` do MVP local e sintético. A listagem foi confirmada no backend vivo em 2026-10-24.
+Estado: fundação, catálogo, briefing, listagem, detalhes de campanha, validação e revisão por peça implementados. Base documental: [API_CONTRACT.md](API_CONTRACT.md), [FRONTEND_HANDOFF.md](FRONTEND_HANDOFF.md), [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md) e [openapi.json](openapi.json). O contrato descreve o backend `0.1.0` do MVP local e sintético.
 
 ## Escopo documentado
 
@@ -85,7 +85,7 @@ Zod reproduz somente limites públicos de entrada: textos obrigatórios de 1–2
 | Impacto | Evidência documental | Efeito no frontend |
 |---|---|---|
 | Bloqueia acesso controlado | Sem autenticação, autorização ou perfis | Não é possível criar login real nem auditoria confiável do revisor. |
-| Limita navegação aos detalhes | A rota frontend de detalhe por ID ainda não foi implementada | A listagem mostra resumo e estados por peça; acesso aos detalhes integra a etapa 2. |
+| Verificação visual pendente | Detalhes e ações testados por componentes e serviços HTTP; sem inspeção visual em navegador nesta etapa | Conferir encaixe e navegação em telas pequenas antes da apresentação. |
 | Bloqueia edição e operação | Sem atualização/regeneração de peça, mídia, exportação, publicação, métricas ou CRUD de regras/produtos | Essas telas e ações aguardam novos contratos do backend. |
 | Alto | Regras e catálogo mudam sem endpoint de configuração/eventos | Estado pode ser invalidado em consulta; validação do servidor é autoridade. |
 | Alto | CORS documentado apenas para origens locais explícitas | Hospedagem remota exige decisão e configuração do backend. |

@@ -77,6 +77,7 @@ export function BriefingForm({ products, initialProductId }: { products: Product
           ))}
         </ul>
         <div className="mt-7 flex flex-wrap gap-3">
+          <Button asChild><Link to={`/campaigns/${encodeURIComponent(created.id)}`}>Abrir campanha</Link></Button>
           <Button type="button" onClick={() => { reset(); setCreated(null); setRequestError(null) }}>Criar outro briefing</Button>
           <Button asChild variant="outline"><Link to="/products">Voltar ao catálogo</Link></Button>
         </div>

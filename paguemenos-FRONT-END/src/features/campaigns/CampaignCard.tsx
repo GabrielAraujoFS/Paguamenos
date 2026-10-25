@@ -1,4 +1,5 @@
 import type { Campaign, PieceState } from "@/contracts/api"
+import { Link } from "react-router"
 
 const stateLabels: Record<PieceState, string> = {
   draft: "Rascunho",
@@ -19,7 +20,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", ti
 export function CampaignCard({ campaign }: { campaign: Campaign }) {
   const createdAt = new Date(campaign.created_at)
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <Link to={`/campaigns/${encodeURIComponent(campaign.id)}`} className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-400 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h2 className="break-words text-lg font-bold text-blue-950">{campaign.briefing.campaign_name}</h2>
@@ -37,6 +38,6 @@ export function CampaignCard({ campaign }: { campaign: Campaign }) {
           ))}
         </div>
       </div>
-    </article>
+    </Link>
   )
 }

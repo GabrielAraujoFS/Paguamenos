@@ -16,6 +16,11 @@ export type Channel = "feed" | "story" | "banner"
 export type PieceState = "draft" | "validated" | "approved" | "rejected"
 export type Severity = "info" | "warning" | "critical"
 export type Decision = "approved" | "rejected"
+export interface ReviewRequest {
+  decision: Decision
+  reviewer_id: string
+  comment?: string | null
+}
 
 export interface Briefing {
   campaign_name: string

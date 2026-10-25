@@ -1,5 +1,17 @@
 import { apiClient } from "@/api/client"
-import type { Campaign, CampaignListParams, CampaignPage, GenerateRequest } from "@/contracts/api"
+import type { Campaign, CampaignListParams, CampaignPage, GenerateRequest, Piece, ReviewRequest } from "@/contracts/api"
+
+export async function getCampaign(id: string): Promise<Campaign> {
+  return (await apiClient.get<Campaign>(`/campaigns/${encodeURIComponent(id)}`)).data
+}
+
+export async function validateCampaign(id: string): Promise<Campaign> {
+  return (await apiClient.post<Campaign>(`/campaigns/${encodeURIComponent(id)}/validate`)).data
+}
+
+export async function reviewPiece(id: string, review: ReviewRequest): Promise<Piece> {
+  return (await apiClient.post<Piece>(`/pieces/${encodeURIComponent(id)}/review`, review)).data
+}
 
 function isCampaignPage(value: unknown): value is CampaignPage {
   if (typeof value !== "object" || value === null) return false

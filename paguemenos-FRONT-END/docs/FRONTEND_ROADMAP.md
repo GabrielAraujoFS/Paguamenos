@@ -1,6 +1,6 @@
 # Roadmap do frontend
 
-Estado: etapas 0 e 1, mais listagem de campanhas, implementadas; a verificação visual no navegador com backend ativo continua pendente. Referências: [FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md), [API_CONTRACT.md](API_CONTRACT.md) e [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md).
+Estado: etapas 0 a 4, mais listagem de campanhas, implementadas; a verificação visual no navegador com backend ativo continua pendente. Os serviços de detalhe, validação e revisão foram exercitados contra FastAPI temporário com SQLite descartável e provedor mock. Referências: [FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md), [API_CONTRACT.md](API_CONTRACT.md) e [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md).
 
 | Etapa | Prioridade | Entrega planejada | Critério de conclusão |
 |---|---|---|---|
@@ -22,4 +22,4 @@ Estado: etapas 0 e 1, mais listagem de campanhas, implementadas; a verificação
 
 ## Dependências fora do escopo atual
 
-Login e perfis, edição/regeneração, configuração de marca e catálogo por UI, mídia/publicação e dashboard exigem novos endpoints e regras do backend. A listagem global agora tem contrato real e foi implementada; detalhe por ID continua planejado para a etapa 2. Hospedagem fora das origens locais exige configuração CORS e decisão de segurança do backend.
+Login e perfis, edição/regeneração, configuração de marca e catálogo por UI, mídia/publicação e dashboard exigem novos endpoints e regras do backend. Listagem, detalhe por ID, validação e revisão estão implementados. Hospedagem fora das origens locais exige configuração CORS e decisão de segurança do backend.
