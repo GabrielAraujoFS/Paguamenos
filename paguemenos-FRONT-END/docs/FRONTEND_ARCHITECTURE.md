@@ -1,5 +1,7 @@
 # Arquitetura proposta do frontend
 
+Atualização de 2026-10-26: o detalhe de campanha agora também consulta `GET /pieces/{piece_id}/render`, inicia `POST /pieces/{piece_id}/render` e mostra a prévia de `GET /pieces/{piece_id}/image`. A validação e a revisão existentes permanecem na mesma tela. As descrições abaixo de geração apenas textual registram o escopo anterior.
+
 Estado: fundação, catálogo, briefing, listagem, detalhes de campanha, validação e revisão por peça implementados. Base documental: [API_CONTRACT.md](API_CONTRACT.md), [FRONTEND_HANDOFF.md](FRONTEND_HANDOFF.md), [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md) e [openapi.json](openapi.json). O contrato descreve o backend `0.1.0` do MVP local e sintético.
 
 ## Escopo documentado

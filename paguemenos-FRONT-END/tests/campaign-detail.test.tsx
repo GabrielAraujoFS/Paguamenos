@@ -3,13 +3,22 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event"
 import { AxiosError, AxiosHeaders } from "axios"
 import { MemoryRouter, Route, Routes } from "react-router"
-import { afterEach, expect, it, vi } from "vitest"
-import { getCampaign, reviewPiece, validateCampaign } from "@/api/services/campaigns"
-import type { Campaign, Piece } from "@/contracts/api"
+import { afterEach, beforeEach, expect, it, vi } from "vitest"
+import { getCampaign, getRender, reviewPiece, startRender, validateCampaign } from "@/api/services/campaigns"
+import type { Campaign, Piece, RenderStatus } from "@/contracts/api"
 import { CampaignCard } from "@/features/campaigns/CampaignCard"
 import { CampaignDetailPage } from "@/pages/CampaignDetailPage"
 
-vi.mock("@/api/services/campaigns", () => ({ getCampaign: vi.fn(), validateCampaign: vi.fn(), reviewPiece: vi.fn() }))
+vi.mock("@/api/services/campaigns", () => ({ getCampaign: vi.fn(), getRender: vi.fn(), startRender: vi.fn(), getPieceImage: vi.fn(), validateCampaign: vi.fn(), reviewPiece: vi.fn() }))
+
+beforeEach(() => {
+  vi.mocked(getRender).mockImplementation(async (id) => ({ piece_id: id, visual: {
+    state: "pending", plan: null, template: null, background: null, product_image: null,
+    final_image: null, generation: null, render_request_id: null, plan_id: null,
+    image_generation: null, composed_at: null, source_piece_id: null,
+    error_code: null, error_message: null, visual_review_required: true,
+  } }))
+})
 
 const piece: Piece = {
   id: "piece-1", campaign_id: "campaign-1", channel: "feed", title: "Título completo",
@@ -42,6 +51,26 @@ function renderPage(card = false) {
   return client
 }
 afterEach(() => { cleanup(); vi.resetAllMocks() })
+
+it("inicia renderização da peça sem criar outra campanha", async () => {
+  vi.mocked(getCampaign).mockResolvedValue(campaign)
+  const visual = {
+    state: "pending" as const,
+    plan: { channel: "feed" as const, art_direction: "Estúdio claro", background_prompt: "Fundo claro sem texto", layout: "produto_centro", palette: ["#FFFFFF"], concept: "Cuidado", visual_style: "Minimalista", scenario: "Estúdio", lighting: "Difusa", decorative_elements: [] },
+    template: null, background: null, product_image: null, final_image: null,
+    generation: null, render_request_id: null, plan_id: null, image_generation: null,
+    composed_at: null, source_piece_id: null, error_code: null, error_message: null,
+    visual_review_required: true,
+  }
+  vi.mocked(getRender).mockImplementation(async (id): Promise<RenderStatus> => ({ piece_id: id, visual }))
+  vi.mocked(startRender).mockImplementation(async (id): Promise<RenderStatus> => ({ piece_id: id, visual: { ...visual, state: "processing" } }))
+  renderPage()
+  const feed = within(await screen.findByRole("article", { name: "Peça feed" }))
+  await userEvent.click(await feed.findByRole("button", { name: "Gerar imagem" }))
+  await waitFor(() => expect(startRender).toHaveBeenCalledTimes(1))
+  expect(startRender).toHaveBeenCalledWith("piece-1", { request_id: expect.any(String) })
+  expect(await feed.findByText("Gerando fundo e compondo…")).toBeTruthy()
+})
 
 it("abre o cartão por link e mostra briefing e conteúdo completo de todas as peças", async () => {
   vi.mocked(getCampaign).mockResolvedValue(campaign)

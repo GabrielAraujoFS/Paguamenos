@@ -28,7 +28,7 @@ export function CampaignDetailPage() {
           <Button variant="outline" disabled={busy} onClick={() => { setNotice(""); mutation.reset(); void campaign.refetch() }}>Atualizar campanha</Button>
         </div>
       </header>
-      {data.pieces.map((piece) => <PieceDetail key={`${data.id}-${piece.id}`} piece={piece} busy={busy} onReview={async (pieceId, review) => { setNotice(""); try { await mutation.mutateAsync({ type: "review", pieceId, review }); setNotice("Revisão registrada. O estado da peça foi atualizado."); return true } catch { return false } }} />)}
+      {data.pieces.map((piece) => <PieceDetail key={`${data.id}-${piece.id}`} piece={piece} campaignId={data.id} sourcePieces={data.pieces.filter((candidate) => candidate.id !== piece.id && candidate.channel === piece.channel)} busy={busy} onReview={async (pieceId, review) => { setNotice(""); try { await mutation.mutateAsync({ type: "review", pieceId, review }); setNotice("Revisão registrada. O estado da peça foi atualizado."); return true } catch { return false } }} />)}
     </>}
     {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-950"><p className="font-semibold">Não foi possível concluir a operação</p><p className="mt-1">{error.message}</p>{error.status === 409 && <p className="mt-2">A aprovação foi bloqueada. Confira o estado atualizado e valide novamente se necessário.</p>}{error.kind === "network" && <p className="mt-2">A resposta não foi confirmada. Atualize a campanha antes de repetir a operação para evitar registros duplicados.</p>}</div>}
     {notice && <p role="status" className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">{notice}</p>}

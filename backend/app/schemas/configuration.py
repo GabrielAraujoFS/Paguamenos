@@ -25,6 +25,7 @@ class BrandProfile(Configuration):
     name: Nonblank = 'Marca de demonstração'
     textual_identity: str = Field(default='', max_length=200)
     allowed_colors: list[HexColor] = Field(default_factory=list)
+    allowed_fonts: list[Nonblank] = Field(default_factory=list)
     # Deterministic mock styles, not a semantic assessment of tone.
     tone_of_voice: Literal['neutro', 'acolhedor', 'direto'] = 'neutro'
 

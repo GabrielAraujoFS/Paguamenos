@@ -1,5 +1,24 @@
 # Progresso do frontend
 
+## Merge de campanhas e imagens (2026-10-26)
+
+- Branch `codex/merge-criativos-ia`: integrada a geração visual da `BACKEND-IA` com a tela de campanhas de `feature/geracao-ia`. A tela mantém briefing completo, BrandGuard, histórico e confirmação explícita da revisão. Acrescenta plano visual, ações de renderização, acompanhamento do estado e prévia PNG. As rotas `/campaigns/:campaignId` e `/campanhas/:campaignId` abrem o mesmo detalhe.
+- Um fundo abstrato de teste está em `backend/app/data/assets/backgrounds/mock-background.png`. No Docker Compose, `IMAGE_GENERATION_PROVIDER=mock` o utiliza sem API externa; o padrão permanece `disabled`. Campanhas antigas sem plano visual continuam consultáveis e revisáveis, mas a renderização retorna `VISUAL_PLAN_MISSING` até que exista um plano.
+- Verificações desta integração: backend `pytest -q -p no:cacheprovider`: **201 aprovados**; frontend `npm run test -- --maxWorkers=1 --testTimeout=20000`: **18 aprovados, 1 opt-in ignorado**; `npm run build`, `npm run lint` e `docker compose config --quiet`: aprovados. Um teste local com SQLite e armazenamento temporários retornou campanha 201, render 202, estado `composed`, PNG 200, BrandGuard conforme e revisão humana aprovada 200 usando o fundo mock. Os snapshots OpenAPI foram alinhados à descrição HTTP 422 emitida pelo FastAPI instalado.
+- Pendências: validar o fluxo visual no navegador e executar o Compose com o daemon Docker ativo; testar Google/OpenAI depende de chave e pode gerar custo. Os assets `syn-*`, logo e fonte presentes são demonstrativos, não oficiais.
+
+## BrandGuard visual (2026-10-25)
+
+- O painel de validação existente na campanha classifica o relatório em **Conforme**, **Não conforme** ou **Revisão necessária**, usando `ValidationRun.success`, `severity` e `passed`. Exibe as regras visuais e mensagens de evidência recebidas da API, sem criar endpoint ou esquema novo no frontend.
+- O backend estendeu o fingerprint aos bytes da imagem final, sidecars, fundo, cópia persistida do produto, fotografia oficial, logo e fonte; aprovação antiga é invalidada quando eles mudam. Verificação final: 184 testes de backend e 15 de frontend aprovados; `npm run lint` e `npm run build` aprovados.
+
+## Integração híbrida em 2026-10-25
+
+- Divergência confirmada: a documentação anterior descrevia apenas campanhas textuais, mas o OpenAPI vivo e os módulos `render.py`, `schemas` e `storage.py` oferecem plano visual, render assíncrono e referências de imagem. O backend recebeu `GET /pieces/{piece_id}/image`; os snapshots OpenAPI do backend e deste frontend foram atualizados.
+- Implementada a tela `/campanhas/:campaignId`: consulta campanha e estado de cada peça, mostra dados comerciais autorizados, plano visual, metadados, validações e histórico de revisão. Ações de render usam `request_id`, consultas periódicas só ocorrem em `processing` e `background_ready`, e a prévia PNG usa URL de objeto revogada ao desmontar. Mutação de validação/revisão não tem retry automático e usa trava contra clique duplo.
+- Verificação final: backend `pytest` 173 aprovados; frontend `npm run test` 14 aprovados, `npm run lint` e `npm run build` aprovados; `docker compose config --quiet` aprovado. O teste de clique duplo revelou uma validação duplicada após resposta rápida; a trava recebeu janela curta de 800 ms e os testes de validação e revisão passaram novamente.
+- Pendências: testar navegação no navegador com backend e frontend ligados, executar Docker Compose com daemon ativo e validar provedor pago somente com autorização de custo. O backend ainda não possui autenticação/autorização; a prévia e as mutações não podem ser expostas publicamente sem proteção.
+
 Última atualização: 2026-10-25. Este arquivo registra entregas, verificações e pendências. Fundação, catálogo, briefing e listagem de campanhas estão implementados; detalhes persistidos, validação e revisão permanecem para as próximas etapas.
 
 ## Análise e planejamento

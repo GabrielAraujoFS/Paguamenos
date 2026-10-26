@@ -3,12 +3,22 @@ services:
     build: ./backend
     environment:
       DATABASE_URL: sqlite:////data/creative_factory.db
+      IMAGE_STORAGE_ROOT: /data/creative-assets
       GENERATION_PROVIDER: ${GENERATION_PROVIDER:-mock}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
       GENERATION_TIMEOUT_SECONDS: ${GENERATION_TIMEOUT_SECONDS:-20}
+      VISUAL_MAX_ATTEMPTS: ${VISUAL_MAX_ATTEMPTS:-2}
+      IMAGE_GENERATION_PROVIDER: ${IMAGE_GENERATION_PROVIDER:-disabled}
+      IMAGE_MOCK_PATH: ${IMAGE_MOCK_PATH:-/app/app/data/assets/backgrounds/mock-background.png}
+      IMAGE_MODEL: ${IMAGE_MODEL:-gemini-3.1-flash-image}
+      IMAGE_SIZE: ${IMAGE_SIZE:-2K}
+      IMAGE_TIMEOUT_SECONDS: ${IMAGE_TIMEOUT_SECONDS:-120}
+      IMAGE_MAX_ATTEMPTS: ${IMAGE_MAX_ATTEMPTS:-2}
     volumes:
       - backend_data:/data
+      - creative_images:/data/creative-assets
     ports:
       - "127.0.0.1:8000:8000"
     healthcheck:
@@ -30,3 +40,4 @@ services:
 
 volumes:
   backend_data:
+  creative_images:

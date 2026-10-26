@@ -5,6 +5,8 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import type { Decision, Piece, ReviewRequest, ValidationRun } from "@/contracts/api"
 import { formatPrice } from "@/features/catalog/format-price"
+import { PieceRender } from "@/features/campaigns/PieceRender"
+import { usePieceRender } from "@/features/campaigns/use-piece-render"
 
 const labels = { draft: "Rascunho", validated: "Validada", approved: "Aprovada", rejected: "Rejeitada" }
 const severityLabels = { critical: "Crítica", warning: "Aviso", info: "Informação" }
@@ -29,13 +31,17 @@ function ValidationResults({ run }: { run: ValidationRun }) {
   </div>
 }
 
-export function PieceDetail({ piece, busy, onReview }: { piece: Piece; busy: boolean; onReview: (id: string, review: ReviewRequest) => Promise<boolean> }) {
+export function PieceDetail({ piece, campaignId, sourcePieces, busy, onReview }: { piece: Piece; campaignId: string; sourcePieces: Piece[]; busy: boolean; onReview: (id: string, review: ReviewRequest) => Promise<boolean> }) {
   const [decision, setDecision] = useState<Decision | null>(null)
+  const renderStatus = usePieceRender(piece.id)
+  const visual = renderStatus.data?.visual
+  const visualBusy = visual?.state === "processing" || visual?.state === "background_ready"
+  const actionBusy = busy || visualBusy
   const { register, handleSubmit, getValues, formState: { errors } } = useForm<ReviewValues>({ resolver: zodResolver(reviewSchema), defaultValues: { reviewer_id: "", comment: "" } })
   const latest = piece.validations.at(-1)
-  const canApprove = piece.state === "validated" && latest?.success === true
+  const canApprove = piece.state === "validated" && latest?.success === true && !renderStatus.isPending && !renderStatus.isError && (!visual?.plan || visual.state === "composed")
   async function confirm() {
-    if (!decision || busy || (decision === "approved" && !canApprove)) return
+    if (!decision || actionBusy || (decision === "approved" && !canApprove)) return
     const values = getValues()
     setDecision(null)
     await onReview(piece.id, { decision, reviewer_id: values.reviewer_id.trim(), comment: values.comment.trim() || null })
@@ -48,6 +54,7 @@ export function PieceDetail({ piece, busy, onReview }: { piece: Piece; busy: boo
     <dl className="grid gap-4 text-sm sm:grid-cols-2">
       {[["Título", piece.title], ["Subtítulo", piece.subtitle], ["CTA", piece.cta], ["Disclaimer", piece.disclaimer], ["Produto", `${piece.product_name} (${piece.product_id})`], ["Preço", formatPrice(piece.price)], ["Oferta autorizada", piece.authorized_offer]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="font-semibold text-blue-950">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-slate-700">{value}</dd></div>)}
     </dl>
+    <PieceRender piece={piece} campaignId={campaignId} sourcePieces={sourcePieces} status={renderStatus} />
     <section className="border-t border-slate-200 pt-5" aria-label="Brand Guardian">
       <h3 className="text-lg font-bold text-blue-950">Brand Guardian</h3>
       {latest ? <ValidationResults run={latest} /> : <p className="mt-2 text-sm text-slate-600">Esta peça ainda não foi validada.</p>}
@@ -56,9 +63,9 @@ export function PieceDetail({ piece, busy, onReview }: { piece: Piece; busy: boo
     <section className="border-t border-slate-200 pt-5">
       <h3 className="text-lg font-bold text-blue-950">Revisão humana</h3>
       <p className="mt-1 text-sm text-slate-600">Informe sua identificação de revisor para registrar a decisão.</p>
-      {!canApprove && <p className="mt-2 text-sm text-slate-600">A aprovação exige estado Validada e última validação bem-sucedida. Peças rejeitadas precisam ser revalidadas.</p>}
+      {!canApprove && <p className="mt-2 text-sm text-slate-600">A aprovação exige estado Validada, última validação bem-sucedida e imagem composta quando houver plano visual. Peças rejeitadas precisam ser revalidadas.</p>}
       <form className="mt-4 space-y-4" onSubmit={handleSubmit(() => setDecision("approved"))} noValidate>
-        <fieldset disabled={busy || decision !== null} className="space-y-4 disabled:opacity-60">
+        <fieldset disabled={actionBusy || decision !== null} className="space-y-4 disabled:opacity-60">
           <div><label htmlFor={`reviewer-${piece.id}`} className="text-sm font-semibold text-blue-950">Identificação do revisor</label><input id={`reviewer-${piece.id}`} maxLength={100} className={fieldClass} aria-invalid={Boolean(errors.reviewer_id)} {...register("reviewer_id")} />{errors.reviewer_id && <p role="alert" className="text-sm text-red-700">{errors.reviewer_id.message}</p>}</div>
           <div><label htmlFor={`comment-${piece.id}`} className="text-sm font-semibold text-blue-950">Comentário da revisão (opcional)</label><textarea id={`comment-${piece.id}`} rows={3} maxLength={2000} className={fieldClass} {...register("comment")} />{errors.comment && <p role="alert" className="text-sm text-red-700">{errors.comment.message}</p>}</div>
           <div className="flex flex-wrap gap-3"><Button type="submit" disabled={!canApprove}>Aprovar</Button><Button type="button" variant="outline" onClick={() => void handleSubmit(() => setDecision("rejected"))()}>Rejeitar</Button></div>
@@ -66,7 +73,7 @@ export function PieceDetail({ piece, busy, onReview }: { piece: Piece; busy: boo
       </form>
       {decision && <div role="group" aria-label="Confirmar revisão" className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm">
         <p>Confirmar {decision === "approved" ? "aprovação" : "rejeição"} desta peça? A decisão será registrada no histórico.</p>
-        <div className="mt-3 flex flex-wrap gap-3"><Button type="button" disabled={busy || (decision === "approved" && !canApprove)} onClick={() => void confirm()}>Confirmar {decision === "approved" ? "aprovação" : "rejeição"}</Button><Button type="button" variant="outline" disabled={busy} onClick={() => setDecision(null)}>Cancelar</Button></div>
+        <div className="mt-3 flex flex-wrap gap-3"><Button type="button" disabled={actionBusy || (decision === "approved" && !canApprove)} onClick={() => void confirm()}>Confirmar {decision === "approved" ? "aprovação" : "rejeição"}</Button><Button type="button" variant="outline" disabled={actionBusy} onClick={() => setDecision(null)}>Cancelar</Button></div>
       </div>}
       <details className="mt-5" open={piece.reviews.length > 0}>
         <summary className="cursor-pointer text-sm font-semibold text-blue-900">Histórico de revisões ({piece.reviews.length})</summary>

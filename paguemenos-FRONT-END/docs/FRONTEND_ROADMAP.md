@@ -1,5 +1,7 @@
 # Roadmap do frontend
 
+Atualização de 2026-10-26: a integração visual está implementada em branch de teste, com render por peça, estado e prévia PNG; validação manual em navegador e Docker permanece pendente. A revisão mantém confirmação explícita. As etapas abaixo descrevem o planejamento original e devem ser lidas com essa atualização.
+
 Estado: etapas 0 a 4, mais listagem de campanhas, implementadas; a verificação visual no navegador com backend ativo continua pendente. Os serviços de detalhe, validação e revisão foram exercitados contra FastAPI temporário com SQLite descartável e provedor mock. Referências: [FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md), [API_CONTRACT.md](API_CONTRACT.md) e [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md).
 
 | Etapa | Prioridade | Entrega planejada | Critério de conclusão |

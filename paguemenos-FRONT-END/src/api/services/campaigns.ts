@@ -1,17 +1,5 @@
 import { apiClient } from "@/api/client"
-import type { Campaign, CampaignListParams, CampaignPage, GenerateRequest, Piece, ReviewRequest } from "@/contracts/api"
-
-export async function getCampaign(id: string): Promise<Campaign> {
-  return (await apiClient.get<Campaign>(`/campaigns/${encodeURIComponent(id)}`)).data
-}
-
-export async function validateCampaign(id: string): Promise<Campaign> {
-  return (await apiClient.post<Campaign>(`/campaigns/${encodeURIComponent(id)}/validate`)).data
-}
-
-export async function reviewPiece(id: string, review: ReviewRequest): Promise<Piece> {
-  return (await apiClient.post<Piece>(`/pieces/${encodeURIComponent(id)}/review`, review)).data
-}
+import type { Campaign, CampaignListParams, CampaignPage, GenerateRequest, Piece, RenderRequest, RenderStatus, ReviewRequest } from "@/contracts/api"
 
 function isCampaignPage(value: unknown): value is CampaignPage {
   if (typeof value !== "object" || value === null) return false
@@ -44,6 +32,38 @@ export async function getCampaigns(params: CampaignListParams): Promise<Campaign
 export async function generateCampaign(briefing: GenerateRequest): Promise<Campaign> {
   const { data } = await apiClient.post<Campaign>("/campaigns/generate", briefing, {
     headers: { "Content-Type": "application/json" },
+  })
+  return data
+}
+
+export async function getCampaign(campaignId: string): Promise<Campaign> {
+  const { data } = await apiClient.get<Campaign>(`/campaigns/${encodeURIComponent(campaignId)}`)
+  return data
+}
+
+export async function validateCampaign(campaignId: string): Promise<Campaign> {
+  const { data } = await apiClient.post<Campaign>(`/campaigns/${encodeURIComponent(campaignId)}/validate`)
+  return data
+}
+
+export async function reviewPiece(pieceId: string, request: ReviewRequest): Promise<Piece> {
+  const { data } = await apiClient.post<Piece>(`/pieces/${encodeURIComponent(pieceId)}/review`, request)
+  return data
+}
+
+export async function startRender(pieceId: string, request: RenderRequest): Promise<RenderStatus> {
+  const { data } = await apiClient.post<RenderStatus>(`/pieces/${encodeURIComponent(pieceId)}/render`, request)
+  return data
+}
+
+export async function getRender(pieceId: string): Promise<RenderStatus> {
+  const { data } = await apiClient.get<RenderStatus>(`/pieces/${encodeURIComponent(pieceId)}/render`)
+  return data
+}
+
+export async function getPieceImage(pieceId: string): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(`/pieces/${encodeURIComponent(pieceId)}/image`, {
+    responseType: "blob", headers: { Accept: "image/png" },
   })
   return data
 }
