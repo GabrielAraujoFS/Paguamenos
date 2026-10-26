@@ -1,5 +1,7 @@
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Protocol
-from app.schemas import Briefing, GeneratedText, Product
+from app.schemas import Briefing, Channel, GeneratedText, GenerationMetadata, Product, VisualPlan
 from app.schemas.configuration import parse_rules
 from app.services.catalog import load_rules
 
@@ -9,6 +11,13 @@ class GenerationError(Exception):
     def __init__(self, code: str, message: str):
         self.code, self.message = code, message
         super().__init__(message)
+
+
+@dataclass(frozen=True)
+class GenerationPackage:
+    pieces: list[GeneratedText]
+    visual_plans: list[VisualPlan]
+    metadata: GenerationMetadata
 
 
 def configured_generator(rules_loader):
@@ -47,3 +56,20 @@ class MockGenerationService:
                 for field in ('title', 'subtitle', 'cta')
             }))
         return pieces
+
+    def generate_package(self, briefing: Briefing, product: Product) -> GenerationPackage:
+        from app.services.visual_planning import validate_visual_plans
+        plans = []
+        for channel in briefing.channels:
+            if channel not in (Channel.FEED, Channel.STORY):
+                continue
+            layout = "produto_direita" if channel == Channel.FEED else "produto_centro"
+            plans.append(VisualPlan(channel=channel, art_direction="Composição abstrata clara e equilibrada",
+                background_prompt="Fundo abstrato suave com formas orgânicas e áreas livres",
+                layout=layout, palette=["#DDEEFF", "#FFFFFF"], concept="Clareza e cuidado",
+                visual_style="Minimalista", scenario="Estúdio abstrato",
+                lighting="Difusa e uniforme", decorative_elements=["formas suaves"]))
+        return GenerationPackage(pieces=self.generate(briefing, product),
+            visual_plans=validate_visual_plans(plans, briefing.channels, product),
+            metadata=GenerationMetadata(provider="mock", model="deterministic",
+                                        created_at=datetime.now(timezone.utc), attempts=1))

@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import type { Decision, Piece, ReviewRequest, ValidationRun } from "@/contracts/api"
+import { PieceVisual } from "@/features/campaigns/PieceVisual"
 import { formatPrice } from "@/features/catalog/format-price"
 
 const labels = { draft: "Rascunho", validated: "Validada", approved: "Aprovada", rejected: "Rejeitada" }
@@ -29,7 +30,7 @@ function ValidationResults({ run }: { run: ValidationRun }) {
   </div>
 }
 
-export function PieceDetail({ piece, busy, onReview }: { piece: Piece; busy: boolean; onReview: (id: string, review: ReviewRequest) => Promise<boolean> }) {
+export function PieceDetail({ piece, campaignId, sourcePieces, busy, onBusyChange, onReview }: { piece: Piece; campaignId: string; sourcePieces: Piece[]; busy: boolean; onBusyChange: (id: string, active: boolean) => void; onReview: (id: string, review: ReviewRequest) => Promise<boolean> }) {
   const [decision, setDecision] = useState<Decision | null>(null)
   const { register, handleSubmit, getValues, formState: { errors } } = useForm<ReviewValues>({ resolver: zodResolver(reviewSchema), defaultValues: { reviewer_id: "", comment: "" } })
   const latest = piece.validations.at(-1)
@@ -48,6 +49,7 @@ export function PieceDetail({ piece, busy, onReview }: { piece: Piece; busy: boo
     <dl className="grid gap-4 text-sm sm:grid-cols-2">
       {[["Título", piece.title], ["Subtítulo", piece.subtitle], ["CTA", piece.cta], ["Disclaimer", piece.disclaimer], ["Produto", `${piece.product_name} (${piece.product_id})`], ["Preço", formatPrice(piece.price)], ["Oferta autorizada", piece.authorized_offer]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="font-semibold text-blue-950">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-slate-700">{value}</dd></div>)}
     </dl>
+    <PieceVisual piece={piece} campaignId={campaignId} sourcePieces={sourcePieces} disabled={busy} onBusyChange={onBusyChange} />
     <section className="border-t border-slate-200 pt-5" aria-label="Brand Guardian">
       <h3 className="text-lg font-bold text-blue-950">Brand Guardian</h3>
       {latest ? <ValidationResults run={latest} /> : <p className="mt-2 text-sm text-slate-600">Esta peça ainda não foi validada.</p>}

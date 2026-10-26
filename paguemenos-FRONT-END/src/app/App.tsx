@@ -27,6 +27,7 @@ export function App() {
             <Route path="campaigns/new" element={<NewCampaignPage />} />
             <Route path="campaigns/:campaignId" element={<CampaignDetailPage />} />
             <Route path="campanhas" element={<CampaignsPage />} />
+          <Route path="campanhas/:campaignId" element={<CampaignDetailPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

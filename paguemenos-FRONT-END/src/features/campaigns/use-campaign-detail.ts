@@ -5,13 +5,16 @@ import { getCampaign, reviewPiece, validateCampaign } from "@/api/services/campa
 import { normalizeHttpError } from "@/api/errors"
 import type { Campaign, ReviewRequest } from "@/contracts/api"
 
+type CampaignAction = { type: "validate" } | { type: "review"; pieceId: string; review: ReviewRequest }
+
 export function useCampaignDetail(id: string) {
   const client = useQueryClient()
   const lock = useRef(false)
+  const lastAction = useRef({ key: "", at: 0 })
   const campaign = useQuery({ queryKey: queryKeys.campaign(id), queryFn: () => getCampaign(id), enabled: Boolean(id), retry: false })
   const mutation = useMutation({
     retry: false,
-    mutationFn: async (action: { type: "validate" } | { type: "review"; pieceId: string; review: ReviewRequest }) => {
+    mutationFn: async (action: CampaignAction) => {
       if (lock.current) throw new Error("Uma operação já está em andamento.")
       lock.current = true
       try {
@@ -40,5 +43,16 @@ export function useCampaignDetail(id: string) {
       }
     },
   })
-  return { campaign, mutation }
+  async function runAction(action: CampaignAction) {
+    const key = action.type === "validate" ? "validate" : `review:${action.pieceId}:${action.review.decision}`
+    if (lock.current || (lastAction.current.key === key && Date.now() - lastAction.current.at < 800)) return
+    lastAction.current = { key, at: Date.now() }
+    try {
+      await mutation.mutateAsync(action)
+    } catch (error) {
+      lastAction.current = { key: "", at: 0 }
+      throw error
+    }
+  }
+  return { campaign, mutation, runAction }
 }

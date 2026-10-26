@@ -9,7 +9,8 @@ from time import monotonic
 from uuid import uuid4
 from app.services.generation import GenerationError
 from app.models import CampaignModel, PieceModel
-from app.schemas import Briefing, Campaign, CampaignPage, Channel, ErrorResponse, GeneratedText, PieceState
+from app.schemas import Briefing, Campaign, CampaignPage, Channel, ErrorResponse, GeneratedText, PieceState, VisualMetadata
+from app.services.composition import default_template
 from app.services.workflow import campaign_output, fail, invalidate_stale, validate_piece
 router = APIRouter(tags=["campaigns"])
 logger = logging.getLogger(__name__)
@@ -85,7 +86,9 @@ def generate(briefing: Briefing, request: Request, db: Session = Depends(generat
     provider = type(generator).__name__
     model = getattr(getattr(generator, 'settings', None), 'model', 'none')
     try:
-        generated = [GeneratedText.model_validate(p) for p in request.app.state.generator.generate(briefing, product)]
+        package = generator.generate_package(briefing, product) if hasattr(generator, 'generate_package') else None
+        generated = [GeneratedText.model_validate(p) for p in (
+            package.pieces if package is not None else generator.generate(briefing, product))]
     except GenerationError as exc:
         logger.warning('generation_failed operation=%s provider=%s model=%s code=%s duration=%.3f',
                        operation_id, provider, model, exc.code, monotonic() - started)
@@ -96,10 +99,16 @@ def generate(briefing: Briefing, request: Request, db: Session = Depends(generat
         fail(502, "GENERATION_CONTRACT_ERROR", "O gerador deve retornar uma peça por canal solicitado.")
     campaign = CampaignModel(briefing=briefing.model_dump(mode="json"))
     by_channel = {p.channel: p for p in generated}
+    visual_by_channel = {p.channel: p for p in package.visual_plans} if package is not None else {}
     for index, channel in enumerate(briefing.channels):
         content = by_channel[channel].model_dump(mode="json")
+        plan = visual_by_channel.get(channel)
+        visual = VisualMetadata(plan=plan,
+            template=default_template(plan.layout, channel) if plan is not None else None,
+            generation=package.metadata if plan is not None else None)
         content.update(product_id=product.id, product_name=product.name, price=str(product.price),
-            authorized_offer=product.authorized_offer, disclaimer=rules['generation']['disclaimer'])
+            authorized_offer=product.authorized_offer, disclaimer=rules['generation']['disclaimer'],
+            visual=visual.model_dump(mode="json"))
         campaign.pieces.append(PieceModel(position=index, content=content, state="draft"))
     db.add(campaign)
     db.flush()
@@ -112,7 +121,8 @@ def get_campaign(campaign_id: str, request: Request, db: Session = Depends(sessi
     campaign = find_campaign(db, campaign_id)
     rules = request.app.state.rules_loader()
     for piece in campaign.pieces:
-        invalidate_stale(piece, request.app.state.catalog, rules)
+        invalidate_stale(piece, request.app.state.catalog, rules,
+                         request.app.state.image_storage, request.app.state.composer)
     db.flush()
     return campaign_output(campaign)
 
@@ -121,6 +131,7 @@ def validate(campaign_id: str, request: Request, db: Session = Depends(session))
     campaign = find_campaign(db, campaign_id)
     rules = request.app.state.rules_loader()
     for piece in campaign.pieces:
-        validate_piece(piece, request.app.state.catalog, rules)
+        validate_piece(piece, request.app.state.catalog, rules,
+                       request.app.state.image_storage, request.app.state.composer)
     db.flush()
     return campaign_output(campaign)

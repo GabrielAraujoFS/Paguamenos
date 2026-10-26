@@ -72,6 +72,10 @@ Um campo “Abrir campanha por ID” pode navegar para `/campaigns/:campaignId`.
 
 ## Fluxos e consistência
 
+Integração de 2026-10-26: `/campaigns/:campaignId` e `/campanhas/:campaignId` são aliases da mesma tela. `PieceDetail` preserva conteúdo, validações, confirmação e histórico de revisão; `PieceVisual` reúne planejamento, geração de fundos, recomposição, reutilização autorizada, polling e `PiecePreview`. Os três serviços visuais correspondem às rotas reais `POST/GET /pieces/{id}/render` e `GET /pieces/{id}/image`. O estado visual vem de `RenderStatus`, sem acrescentar campos ao contrato `Piece`.
+
+Operações editoriais ficam desabilitadas durante renderização ativa. Ao terminar o job, detalhe e listas são invalidados para obter o estado editorial corrente. A proteção contra clique duplo combina bloqueio durante requisição com janela de 800 ms para respostas imediatas. A aprovação segue o backend: campanhas textuais continuam aprováveis após validação; arte composta recebe também as checagens visuais. Não se exige imagem composta de todos os canais, pois essa restrição não existe no servidor.
+
 1. Carregar produtos da API; enviar apenas campos aceitos em `GenerateRequest`. A geração retorna `Campaign` com uma peça `draft` por canal. Preservar formulário no `502` e oferecer nova tentativa explícita.
 2. Abrir campanha por ID conhecido. `GET /campaigns/{id}` pode persistir a volta de `validated`/`approved` para `draft` se o fingerprint estiver desatualizado; substituir a visão pelo retorno atual. Histórico antigo não define estado presente.
 3. Validar a campanha inteira sem body. Cada chamada cria um `ValidationRun` por peça; bloquear duplo envio e não repetir automaticamente. HTTP 200 com `success: false` é resultado de validação com falhas críticas, não erro HTTP. Severidade e códigos de regra são dados da API, sem quantidade ou ordem fixa.

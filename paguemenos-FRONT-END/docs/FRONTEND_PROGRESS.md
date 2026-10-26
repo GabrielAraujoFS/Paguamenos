@@ -1,5 +1,17 @@
 # Progresso do frontend
 
+## BrandGuard visual (2026-10-25)
+
+- O painel de validação existente na campanha classifica o relatório em **Conforme**, **Não conforme** ou **Revisão necessária**, usando `ValidationRun.success`, `severity` e `passed`. Exibe as regras visuais e mensagens de evidência recebidas da API, sem criar endpoint ou esquema novo no frontend.
+- O backend estendeu o fingerprint aos bytes da imagem final, sidecars, fundo, cópia persistida do produto, fotografia oficial, logo e fonte; aprovação antiga é invalidada quando eles mudam. Verificação final: 184 testes de backend e 15 de frontend aprovados; `npm run lint` e `npm run build` aprovados.
+
+## Integração híbrida em 2026-10-25
+
+- Divergência confirmada: a documentação anterior descrevia apenas campanhas textuais, mas o OpenAPI vivo e os módulos `render.py`, `schemas` e `storage.py` oferecem plano visual, render assíncrono e referências de imagem. O backend recebeu `GET /pieces/{piece_id}/image`; os snapshots OpenAPI do backend e deste frontend foram atualizados.
+- Implementada a tela `/campanhas/:campaignId`: consulta campanha e estado de cada peça, mostra dados comerciais autorizados, plano visual, metadados, validações e histórico de revisão. Ações de render usam `request_id`, consultas periódicas só ocorrem em `processing` e `background_ready`, e a prévia PNG usa URL de objeto revogada ao desmontar. Mutação de validação/revisão não tem retry automático e usa trava contra clique duplo.
+- Verificação final: backend `pytest` 173 aprovados; frontend `npm run test` 14 aprovados, `npm run lint` e `npm run build` aprovados; `docker compose config --quiet` aprovado. O teste de clique duplo revelou uma validação duplicada após resposta rápida; a trava recebeu janela curta de 800 ms e os testes de validação e revisão passaram novamente.
+- Pendências: testar navegação no navegador com backend e frontend ligados, executar Docker Compose com daemon ativo e validar provedor pago somente com autorização de custo. O backend ainda não possui autenticação/autorização; a prévia e as mutações não podem ser expostas publicamente sem proteção.
+
 Última atualização: 2026-10-25. Este arquivo registra entregas, verificações e pendências. Fundação, catálogo, briefing e listagem de campanhas estão implementados; detalhes persistidos, validação e revisão permanecem para as próximas etapas.
 
 ## Análise e planejamento
@@ -54,6 +66,20 @@
 - [ ] Definir hospedagem e CORS de produção com o backend; a configuração documentada é local.
 
 ## Registro de alterações
+
+### Integração de texto, revisão e imagens — 2026-10-26
+
+- Conflitos comparados entre HEAD e MERGE_HEAD. Serviços de consulta/validação/revisão unificados sem duplicação, preservando renderização e download de PNG. Cartões inteiros continuam navegáveis; briefing abre a mesma tela; rotas em português e inglês são aliases.
+- `PieceDetail` mantém formulário RHF/Zod, confirmação explícita, validações por severidade, histórico completo e revisão por peça. `PieceVisual` extrai o painel do Alex e mantém plano Gemini, geração/novo fundo, recomposição, reutilização permitida, polling, erros, prévia e download. Conclusão da renderização atualiza detalhe/listas; ações editoriais ficam bloqueadas durante processamento.
+- Mantidas as regras reais do servidor: aprovação exige estado validated e validação atual bem-sucedida, incluindo checagens visuais quando existe composição. Campanhas antigas/textuais e banner não recebem bloqueio adicional por ausência de imagem.
+- Removidas duplicações de `queryKeys.campaign` e `ReviewRequest` introduzidas pelo merge automático. Proteção de 800 ms contra clique duplo preservada também quando a requisição responde imediatamente, após falha reproduzida pelo teste visual.
+- Gemini: `generate()` e `generate_package()` preservam originalidade e prioridade de marca, excluindo somente `generation.templates` do contexto. Planejamento e metadados visuais do Alex permanecem. Dois testes adicionais verificam regras, produto, briefing, imutabilidade e mock no novo caminho combinado.
+- A comparação do OpenAPI encontrou somente a descrição HTTP 422 dependente de Python (Unprocessable Entity/Content). Descrição explicitada em `backend/app/main.py` para preservar os snapshots existentes, sem alterar schemas, endpoints ou comportamento.
+- Testes frontend das duas branches mantidos em `campaign-detail.test.tsx` e `campaign-visual.test.tsx`: **25 passaram; 1 teste HTTP opt-in ignorado**. Execução com Node 24.22.1, `vitest run --pool=threads --maxWorkers=1 --testTimeout=20000`. O pool de processos falhou ao iniciar dois workers neste ambiente; não foi necessário relaxar asserções.
+- Dependências backend instaladas a partir de requirements.txt (Pillow e google-genai, com suas transitivas). Testes usam apenas chaves fictícias, mock, transportes simulados, SQLite e armazenamento temporários. Nenhuma operação de Docker/volume ou banco da demonstração foi executada.
+- Verificações finais: **203 testes backend passaram**, com um aviso de depreciação Starlette/HTTPX já conhecido. TypeScript (`tsc -b`), lint (`eslint .`) e build de produção (`vite build`) passaram após a correção final de clique duplo. O teste de igualdade do OpenAPI passou sem mudança nos snapshots backend/frontend.
+- Pendências: inspeção visual/manual no navegador e teste dos provedores reais ficam fora desta execução sem credenciais. `docs/openapi.json` da raiz ainda é histórico e não contém os contratos visuais; para integração, usar `backend/examples/openapi.json` ou `paguemenos-FRONT-END/docs/openapi.json`.
+- Merge continua aberto. Nenhum git add, commit, push, abort ou reset foi executado; UU/AA no índice persistem intencionalmente até revisão humana.
 
 ### Fluxo de gerenciamento de campanhas — 2026-10-25
 

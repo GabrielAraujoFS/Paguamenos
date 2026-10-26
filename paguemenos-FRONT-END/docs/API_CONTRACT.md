@@ -1,5 +1,15 @@
 # Contrato da API — Creative Factory + Brand Guardian
 
+## Atualização do pipeline híbrido (2026-10-25)
+
+O OpenAPI vivo do backend neste workspace acrescentou `POST /pieces/{piece_id}/render`, `GET /pieces/{piece_id}/render` e `GET /pieces/{piece_id}/image`. As afirmações antigas abaixo sobre inexistência de mídia e geração apenas textual descrevem a versão anterior.
+
+`POST .../render` recebe `RenderRequest` (`request_id?`, UUID textual; `force?`, `regenerate_background?`, `source_piece_id?`) e responde `RenderStatus` com 202 quando inicia/processa, ou 200 quando já está composto ou bloqueado. `GET .../render` devolve o mesmo status. `visual.state` pode ser `pending`, `processing`, `background_ready`, `composed`, `blocked` ou `failed`; as referências `background`, `product_image` e `final_image` são `ImageReference` (`file_id`, `media_type`, `width?`, `height?`, `sha256`). O plano visual, template e metadados de geração estão dentro de `visual`, não no objeto público `Piece`.
+
+`GET .../image` retorna o PNG final somente quando `visual.state` é `composed`, com `Content-Type: image/png`, `Cache-Control: private, no-store`, `Content-Disposition: inline` e cabeçalhos `X-Creative-Asset-Use: internal-preview` e `X-Creative-Approval-State`. A imagem é uma **prévia interna**, inclusive quando a peça está aprovada. A rota resolve exclusivamente a referência persistida da peça; o cliente não envia caminho nem ID de arquivo. Respostas tratadas incluem 404 para peça/imagem ausente e 409 para referência ou integridade inválida.
+
+**Segurança:** não há autenticação nem autorização no backend atual. A rota de imagem e as operações de campanha/revisão não devem ser expostas publicamente sem controle de acesso na borda ou autenticação implementada no servidor. `reviewer_id` continua autodeclarado. O frontend não interpreta a prévia nem o download como publicação.
+
 Fonte: implementação FastAPI em `backend/app/main.py`, `backend/app/api/`, `backend/app/schemas/` e serviços; `docs/openapi.json` é cópia da especificação exportada pelo backend, cuja igualdade com `/openapi.json` é verificada em `backend/tests/test_brand_configuration.py`. Esta referência descreve também regras de execução que o OpenAPI não expressa. Versão da aplicação: `0.1.0`. URL local usual: `http://127.0.0.1:8000`; não há prefixo `/api` nem versionamento de rota.
 
 **Atualização de 2026-10-24:** o OpenAPI vivo acrescentou `GET /campaigns`, detalhado abaixo. As menções antigas a sete endpoints e à ausência de paginação referem-se ao contrato anterior; a listagem agora é a exceção com paginação e filtros próprios.

@@ -3,13 +3,13 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event"
 import { AxiosError, AxiosHeaders } from "axios"
 import { MemoryRouter, Route, Routes } from "react-router"
-import { afterEach, expect, it, vi } from "vitest"
-import { getCampaign, reviewPiece, validateCampaign } from "@/api/services/campaigns"
+import { afterEach, beforeEach, expect, it, vi } from "vitest"
+import { getCampaign, getRender, reviewPiece, validateCampaign } from "@/api/services/campaigns"
 import type { Campaign, Piece } from "@/contracts/api"
 import { CampaignCard } from "@/features/campaigns/CampaignCard"
 import { CampaignDetailPage } from "@/pages/CampaignDetailPage"
 
-vi.mock("@/api/services/campaigns", () => ({ getCampaign: vi.fn(), validateCampaign: vi.fn(), reviewPiece: vi.fn() }))
+vi.mock("@/api/services/campaigns", () => ({ getRender: vi.fn(), getPieceImage: vi.fn(), startRender: vi.fn(), getCampaign: vi.fn(), validateCampaign: vi.fn(), reviewPiece: vi.fn() }))
 
 const piece: Piece = {
   id: "piece-1", campaign_id: "campaign-1", channel: "feed", title: "Título completo",
@@ -41,6 +41,14 @@ function renderPage(card = false) {
   </Routes></MemoryRouter></QueryClientProvider>)
   return client
 }
+beforeEach(() => {
+  vi.mocked(getRender).mockResolvedValue({ piece_id: "piece-1", visual: {
+    state: "pending", plan: null, template: null, background: null, product_image: null,
+    final_image: null, generation: null, render_request_id: null, plan_id: null,
+    image_generation: null, composed_at: null, source_piece_id: null,
+    error_code: null, error_message: null, visual_review_required: true,
+  } })
+})
 afterEach(() => { cleanup(); vi.resetAllMocks() })
 
 it("abre o cartão por link e mostra briefing e conteúdo completo de todas as peças", async () => {

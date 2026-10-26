@@ -1,5 +1,7 @@
 # Handoff técnico para o frontend — Creative Factory + Brand Guardian
 
+**Atualização de 2026-10-25:** o backend deste workspace implementa planejamento visual, renderização híbrida e entrega de PNG. A tela `/campanhas/:campaignId` usa as rotas de renderização e prévia documentadas em [API_CONTRACT.md](API_CONTRACT.md). Os parágrafos históricos abaixo que indicam ausência de imagens e de download antecedem essa atualização. A prévia precisa de proteção de acesso antes de exposição pública.
+
 Este documento é autossuficiente para implementar a interface do **MVP local**. A referência campo a campo e os exemplos HTTP estão em [API_CONTRACT.md](API_CONTRACT.md); a especificação exportada e verificada está em [openapi.json](openapi.json); a sequência de trabalho está em [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md). Os caminhos `backend/...` citados permitem auditoria, mas o frontend não precisa do código do backend para seguir o contrato descrito aqui.
 
 **Atualização de 2026-10-24:** o backend vivo agora inclui `GET /campaigns` com paginação e filtros `status`, `channel` e `search`. A resposta `CampaignPage` contém `items`, `total`, `page`, `page_size` e `total_pages`. Consulte [API_CONTRACT.md](API_CONTRACT.md) para os limites. As declarações antigas abaixo sobre ausência de listagem representam o contrato anterior.
