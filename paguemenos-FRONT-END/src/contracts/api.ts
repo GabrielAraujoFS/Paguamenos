@@ -73,6 +73,7 @@ export interface Piece {
 }
 
 export interface Campaign {
+  generation?: GenerationMetadata | null
   id: string
   created_at: string
   briefing: Briefing
@@ -153,6 +154,9 @@ export interface BackgroundGenerationMetadata {
 }
 
 export interface VisualMetadata {
+  composition_source?: "ai" | "local_assets" | "local_test" | null
+  fallback_reason?: string | null
+  retry_after_seconds?: number | null
   state: VisualProcessingState
   plan: VisualPlan | null
   template: TemplateConfig | null
@@ -176,6 +180,7 @@ export interface RenderStatus {
 }
 
 export interface RenderRequest {
+  use_local_assets?: boolean
   request_id?: string
   source_piece_id?: string
   regenerate_background?: boolean

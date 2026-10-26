@@ -10,6 +10,7 @@ from app.schemas import Briefing, GeneratedText, GenerationMetadata, Product, Vi
 from app.schemas.configuration import parse_rules
 from app.services.generation import GenerationError, GenerationPackage
 from app.services.visual_planning import validate_visual_plans
+from app.services.availability import QuotaCooldown
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class GeminiGenerationService:
         self.settings = settings
         self.rules_loader = rules_loader
         self.transport = transport
+        self.quota = QuotaCooldown('GENERATION', GenerationError)
 
     def generate(self, briefing: Briefing, product: Product) -> list[GeneratedText]:
         rules = parse_rules(self.rules_loader())
@@ -133,11 +135,12 @@ class GeminiGenerationService:
             except GenerationError as exc:
                 error = exc
             logger.warning('visual_plan_attempt_failed model=%s attempt=%d code=%s', self.settings.model, attempt, error.code)
-            if error.code in ('GENERATION_AUTH_ERROR', 'GENERATION_RATE_LIMIT') or attempt == max_attempts:
+            if error.code in ('GENERATION_AUTH_ERROR', 'GENERATION_RATE_LIMIT', 'GENERATION_QUOTA_EXCEEDED') or attempt == max_attempts:
                 raise error
         raise AssertionError('unreachable')
 
     def _request(self, payload):
+        self.quota.check()
         try:
             with httpx.Client(timeout=self.settings.timeout_seconds, transport=self.transport,
                               follow_redirects=False) as client:
@@ -152,9 +155,14 @@ class GeminiGenerationService:
         if response.status_code in (401, 403):
             raise GenerationError('GENERATION_AUTH_ERROR', 'Acesso ao provedor não autorizado.')
         if response.status_code == 429:
-            raise GenerationError('GENERATION_RATE_LIMIT', 'Limite do provedor atingido. Tente novamente mais tarde.')
+            try:
+                diagnostic = response.json()
+            except ValueError:
+                diagnostic = None
+            raise self.quota.limit(diagnostic, response.headers.get('retry-after'))
         if not response.is_success:
-            raise GenerationError('GENERATION_UNAVAILABLE', 'O provedor não concluiu a geração.')
+            code = 'GENERATION_UNAVAILABLE' if response.status_code in (408, 500, 502, 503, 504) else 'GENERATION_PROVIDER_ERROR'
+            raise GenerationError(code, 'O provedor não concluiu a geração.')
         try:
             body = response.json()
             if not isinstance(body, dict):

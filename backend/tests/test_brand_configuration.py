@@ -346,7 +346,8 @@ def test_openapi_snapshot_and_existing_response_contracts(environment):
     baseline = json.loads((Path(__file__).parents[1] / 'examples' / 'openapi.json').read_text(encoding='utf-8'))
     assert client.get('/openapi.json').json() == baseline
     campaign = generate(client)
-    assert set(campaign) == {'id', 'created_at', 'briefing', 'pieces'}
+    assert set(campaign) == {'id', 'created_at', 'briefing', 'pieces', 'generation'}
+    assert campaign['generation']['provider'] == 'mock'
     assert set(campaign['pieces'][0]) == {
         'id', 'campaign_id', 'channel', 'title', 'subtitle', 'cta', 'disclaimer',
         'product_id', 'product_name', 'price', 'authorized_offer', 'state', 'validations', 'reviews',

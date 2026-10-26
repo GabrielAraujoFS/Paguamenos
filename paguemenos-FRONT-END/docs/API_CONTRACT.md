@@ -1,5 +1,11 @@
 # Contrato da API — Creative Factory + Brand Guardian
 
+## Continuação explícita após falha de IA (2026-10-26)
+
+Falhas temporárias/429 de texto podem incluir `demo_token` em `error.details`. Somente após consentimento, repetir POST `/campaigns/generate` com esse parâmetro opcional e o mesmo briefing cria uma versão mock. O servidor exige oferta válida vinculada ao briefing/produto/regras; 409 indica oferta expirada/alterada. Erros de validação, segurança, autenticação ou HTTP 400 não autorizam fallback. O campo opcional `Campaign.generation` registra provider/model/data e identifica conteúdo demonstrativo, inclusive após reabrir a campanha.
+
+`RenderRequest.use_local_assets` é opcional (false). Após falha visual elegível, essa opção solicita composição Pillow com assets locais, sem nova chamada de IA. `VisualMetadata.composition_source`, `fallback_reason` e `retry_after_seconds` indicam origem e diagnóstico. Falhas de renderização preservam o conteúdo validado e o PNG anterior; uma nova arte concluída exige revalidação. A origem do PNG também aparece em `X-Creative-Composition-Source`. Consulte [detalhes e limites](../../docs/fallback.md). Os demais contratos e as regras comerciais/Brand Guardian permanecem.
+
 ## Atualização do pipeline híbrido (2026-10-25)
 
 O OpenAPI vivo do backend neste workspace acrescentou `POST /pieces/{piece_id}/render`, `GET /pieces/{piece_id}/render` e `GET /pieces/{piece_id}/image`. As afirmações antigas abaixo sobre inexistência de mídia e geração apenas textual descrevem a versão anterior.

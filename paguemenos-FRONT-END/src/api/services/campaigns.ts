@@ -36,6 +36,10 @@ export async function generateCampaign(briefing: GenerateRequest): Promise<Campa
   return data
 }
 
+export async function generateDemonstration(briefing: GenerateRequest, token: string): Promise<Campaign> {
+  return (await apiClient.post<Campaign>("/campaigns/generate", briefing, { params: { demo_token: token } })).data
+}
+
 export async function getCampaign(campaignId: string): Promise<Campaign> {
   const { data } = await apiClient.get<Campaign>(`/campaigns/${encodeURIComponent(campaignId)}`)
   return data

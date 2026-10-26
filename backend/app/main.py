@@ -16,6 +16,7 @@ from app.services.storage import image_storage_from_environment
 from app.services.composition import PillowComposer
 from app.services.image_generation import GoogleImageBackgroundGenerator, LocalImageBackgroundGenerator, OpenAIImageBackgroundGenerator
 from app.settings import ImageGenerationConfig
+from app.services.availability import DemoOffers
 from app.models import PieceModel
 from sqlalchemy import select
 
@@ -39,9 +40,10 @@ def create_app(database_url=None, generator=None, catalog=None, rules_loader=Non
         # An in-process job cannot survive a service restart; make it retryable.
         with application.state.sessions.begin() as db:
             for piece in db.scalars(select(PieceModel)):
-                visual = piece.content.get('visual') or {}
+                key = '_render_job' if '_render_job' in piece.content else 'visual'
+                visual = piece.content.get(key) or {}
                 if visual.get('state') in ('processing', 'background_ready'):
-                    piece.content = {**piece.content, 'visual': {**visual, 'state': 'failed',
+                    piece.content = {**piece.content, key: {**visual, 'state': 'failed',
                         'error_code': 'IMAGE_JOB_INTERRUPTED',
                         'error_message': 'Processamento interrompido; solicite novamente.'}}
         yield
@@ -65,6 +67,7 @@ def create_app(database_url=None, generator=None, catalog=None, rules_loader=Non
     configured_rules()
     application.state.rules_loader = configured_rules
     application.state.generator = generator if generator is not None else configured_generator(configured_rules)
+    application.state.demo_offers = DemoOffers()
     application.state.image_storage = image_storage_from_environment()
     image_config = ImageGenerationConfig.from_environment()
     application.state.background_generator = (background_generator if background_generator is not None else

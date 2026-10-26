@@ -29,6 +29,7 @@ export function PieceVisual({ piece, campaignId, sourcePieces, disabled, onBusyC
   })
   const renderMutation = useMutation({ mutationFn: (body: RenderRequest) => startRender(piece.id, body), retry: false })
   const visual = status.data?.visual
+  const canUseLocal = ["IMAGE_RATE_LIMIT", "IMAGE_QUOTA_EXCEEDED", "IMAGE_UNAVAILABLE", "IMAGE_TIMEOUT", "IMAGE_PROVIDER_UNCONFIGURED"].includes(visual?.error_code ?? "")
   const busy = disabled || visual?.state === "processing" || visual?.state === "background_ready"
   const renderBusy = visual?.state === "processing" || visual?.state === "background_ready" || renderMutation.isPending
   useEffect(() => {
@@ -63,7 +64,7 @@ export function PieceVisual({ piece, campaignId, sourcePieces, disabled, onBusyC
 
   return <section className="space-y-5 border-t border-slate-200 pt-5" aria-label="Peça visual">
     {status.isPending ? <p role="status">Consultando geração…</p> : status.isError ? <div role="alert">Falha ao consultar renderização: {normalizeHttpError(status.error).message} <button type="button" onClick={() => void status.refetch()} className="underline">Tentar novamente</button></div> : visual && <>
-      <section className="space-y-2"><h3 className="font-semibold text-blue-950">Plano visual do Gemini</h3>
+      <section className="space-y-2"><h3 className="font-semibold text-blue-950">Plano visual</h3>
         {visual.plan ? <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
           <p><strong>Conceito:</strong> {visual.plan.concept || visual.plan.art_direction}</p>
           <p><strong>Estilo:</strong> {visual.plan.visual_style || "Não informado"}</p>
@@ -78,6 +79,10 @@ export function PieceVisual({ piece, campaignId, sourcePieces, disabled, onBusyC
       <section className="space-y-3" aria-label="Renderização">
         <p role="status" className="font-semibold">{labels[visual.state]}</p>
         {visual.error_message && <p role="alert" className="text-sm text-red-800">{visual.error_message}{visual.error_code ? ` (${visual.error_code})` : ""}</p>}
+        {canUseLocal && <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-blue-950"><p>A geração de imagens com IA está temporariamente indisponível. Seus textos e revisões foram preservados. Você pode tentar novamente mais tarde ou compor a peça com fotografia do produto, logo e recursos locais, sem gerar uma nova imagem por IA.</p>{visual.retry_after_seconds != null && <p>Aguarde aproximadamente {visual.retry_after_seconds} segundos antes de tentar novamente o provedor.</p>}<button type="button" className={buttonClass} disabled={busy || renderMutation.isPending} onClick={() => void renderPiece({ use_local_assets: true })}>Criar peça com imagens disponíveis</button></div>}
+        {visual.composition_source === "local_assets" && <p className="rounded-lg bg-amber-50 p-3 text-sm font-semibold text-amber-950">Peça produzida com recursos locais · sem geração de imagem por IA</p>}
+        {visual.composition_source === "local_test" && <p className="text-sm font-semibold text-amber-950">Imagem demonstrativa local · sem IA real</p>}
+        {visual.composition_source === "ai" && <p className="text-sm text-blue-950">Fundo gerado com IA · composição com assets autorizados</p>}
         <div className="flex flex-wrap gap-2">
           <button type="button" className={buttonClass} disabled={!visual.plan || busy || renderMutation.isPending} onClick={() => void renderPiece({})}>Gerar imagem</button>
           <button type="button" className={buttonClass} disabled={!visual.plan || busy || renderMutation.isPending} onClick={() => void renderPiece({ regenerate_background: true })}>Gerar novo fundo</button>
@@ -92,7 +97,7 @@ export function PieceVisual({ piece, campaignId, sourcePieces, disabled, onBusyC
           </label>
           <button type="button" className={buttonClass} disabled={!sourcePieceId || busy || renderMutation.isPending} onClick={() => void renderPiece({ source_piece_id: sourcePieceId })}>Usar fundo selecionado</button>
         </div>}
-        {visual.state === "composed" && visual.final_image && <PiecePreview pieceId={piece.id} fileId={visual.final_image.file_id} title={piece.title} />}
+        {visual.final_image && <PiecePreview pieceId={piece.id} fileId={visual.final_image.file_id} title={piece.title} />}
         {visual.generation && <p className="text-xs text-slate-600">Plano: {visual.generation.provider} · {visual.generation.model}{visual.generation.total_tokens != null ? ` · ${visual.generation.total_tokens} tokens` : ""}</p>}
         {visual.image_generation && <p className="text-xs text-slate-600">Fundo: {visual.image_generation.model} · tentativa {visual.image_generation.attempts}{visual.image_generation.total_tokens != null ? ` · ${visual.image_generation.total_tokens} tokens` : ""}</p>}
       </section>

@@ -119,6 +119,9 @@ class BackgroundGenerationMetadata(InputModel):
     cost_basis: str | None = None
 
 class VisualMetadata(InputModel):
+    composition_source: Literal['ai', 'local_assets', 'local_test'] | None = None
+    fallback_reason: str | None = None
+    retry_after_seconds: int | None = Field(default=None, ge=0)
     state: VisualProcessingState = VisualProcessingState.PENDING
     plan: VisualPlan | None = None
     template: TemplateConfig | None = None
@@ -136,6 +139,7 @@ class VisualMetadata(InputModel):
     visual_review_required: bool = True
 
 class RenderRequest(InputModel):
+    use_local_assets: bool = False
     request_id: str | None = Field(default=None, pattern=r"^[0-9a-fA-F-]{36}$")
     source_piece_id: str | None = None
     regenerate_background: bool = False
@@ -186,6 +190,7 @@ class Piece(BaseModel):
     reviews: list[ReviewRecord]
 
 class Campaign(BaseModel):
+    generation: GenerationMetadata | None = None
     id: str
     created_at: datetime
     briefing: Briefing

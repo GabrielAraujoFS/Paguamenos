@@ -10,7 +10,9 @@ def fail(status: int, code: str, message: str):
 def context(piece, catalog, rules, storage=None, composer=None):
     product = catalog.get(piece.content.get("product_id"))
     evidence = visual_fingerprint_evidence(piece.content, storage, composer)
-    return product, fingerprint(piece.content, product, rules, evidence)
+    # A failed/in-progress render job is operational data, not a changed creative.
+    content = {key: value for key, value in piece.content.items() if key != '_render_job'}
+    return product, fingerprint(content, product, rules, evidence)
 
 def invalidate_stale(piece, catalog, rules, storage=None, composer=None):
     _, current = context(piece, catalog, rules, storage, composer)
@@ -41,4 +43,5 @@ def piece_output(piece):
 
 def campaign_output(campaign):
     return {"id": campaign.id, "created_at": campaign.created_at, "briefing": campaign.briefing,
+        "generation": campaign.pieces[0].content.get('text_generation') if campaign.pieces else None,
         "pieces": [piece_output(p) for p in campaign.pieces]}

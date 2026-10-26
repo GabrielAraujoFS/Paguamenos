@@ -5,6 +5,7 @@ import { ErrorState, LoadingState } from "@/components/shared/RequestState"
 import { Button } from "@/components/ui/button"
 import { PieceDetail } from "@/features/campaigns/PieceDetail"
 import { useCampaignDetail } from "@/features/campaigns/use-campaign-detail"
+import { contentOrigin } from "@/features/campaigns/content-origin"
 
 export function CampaignDetailPage() {
   const { campaignId = "" } = useParams()
@@ -23,6 +24,7 @@ export function CampaignDetailPage() {
       <header className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">Campanha</p>
         <h1 className="break-words text-3xl font-bold text-blue-950">{data.briefing.campaign_name}</h1>
+        <p className="rounded-lg bg-blue-50 p-3 text-sm font-semibold text-blue-950">{contentOrigin(data.generation)}</p>
         <dl className="grid gap-4 text-sm sm:grid-cols-2">
           {[["Objetivo", data.briefing.objective], ["Público-alvo", data.briefing.target_audience], ["Produto", data.pieces[0]?.product_name ?? data.briefing.product_id], ["Canais", data.briefing.channels.join(", ")], ["Identificador da campanha", data.id], ["Data de criação", new Date(data.created_at).toLocaleString("pt-BR")]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="font-semibold text-blue-950">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-slate-700">{value}</dd></div>)}
         </dl>

@@ -20,6 +20,7 @@ from google.genai import errors, types
 from app.schemas import BackgroundGenerationMetadata, Channel, ImageReference, VisualPlan
 from app.services.storage import LocalImageStorage
 from app.services.visual_planning import NEGATIVE_PROMPT
+from app.services.availability import QuotaCooldown
 
 
 class ImageGenerationError(Exception):
@@ -67,11 +68,13 @@ class BackgroundGenerator(Protocol):
 class GoogleImageBackgroundGenerator:
     def __init__(self, storage: LocalImageStorage, settings, client=None):
         self.storage, self.settings, self.client = storage, settings, client
+        self.quota = QuotaCooldown('IMAGE', ImageGenerationError)
 
     def generate(self, plan: VisualPlan) -> ImageReference:
         return self.generate_with_metadata(plan).reference
 
     def generate_with_metadata(self, plan: VisualPlan) -> GeneratedBackground:
+        self.quota.check()
         if plan.channel not in _ASPECT_RATIOS:
             raise ImageGenerationError('IMAGE_CHANNEL_UNSUPPORTED', 'Canal sem formato de fundo configurado.')
         prompt = background_prompt(plan)
@@ -128,9 +131,10 @@ class GoogleImageBackgroundGenerator:
                     if status in (401, 403):
                         raise ImageGenerationError('IMAGE_AUTH_ERROR', 'Acesso ao provedor de imagens não autorizado.') from None
                     if status == 429:
-                        raise ImageGenerationError('IMAGE_RATE_LIMIT', 'Quota de imagens atingida.') from None
+                        raise self.quota.limit(getattr(exc, 'details', None) or getattr(exc, 'response_json', None)) from None
                     if status not in (408, 500, 502, 503, 504) or attempt == self.settings.max_attempts:
-                        raise ImageGenerationError('IMAGE_UNAVAILABLE', 'O provedor de imagens não concluiu a geração.') from None
+                        code = 'IMAGE_UNAVAILABLE' if status in (408, 500, 502, 503, 504) else 'IMAGE_PROVIDER_ERROR'
+                        raise ImageGenerationError(code, 'O provedor de imagens não concluiu a geração.') from None
                 except (httpx.TimeoutException, requests.Timeout, TimeoutError):
                     if attempt == self.settings.max_attempts:
                         raise ImageGenerationError('IMAGE_TIMEOUT', 'Tempo de geração de fundo excedido.') from None
@@ -155,11 +159,13 @@ class OpenAIImageBackgroundGenerator:
 
     def __init__(self, storage: LocalImageStorage, settings, client: httpx.Client | None = None):
         self.storage, self.settings, self.client = storage, settings, client
+        self.quota = QuotaCooldown('IMAGE', ImageGenerationError)
 
     def generate(self, plan: VisualPlan) -> ImageReference:
         return self.generate_with_metadata(plan).reference
 
     def generate_with_metadata(self, plan: VisualPlan) -> GeneratedBackground:
+        self.quota.check()
         if plan.channel not in _OPENAI_SIZES:
             raise ImageGenerationError('IMAGE_CHANNEL_UNSUPPORTED', 'Canal sem formato de fundo configurado.')
         prompt = background_prompt(plan)
@@ -178,11 +184,16 @@ class OpenAIImageBackgroundGenerator:
                     if response.status_code in (401, 403):
                         raise ImageGenerationError('IMAGE_AUTH_ERROR', 'Acesso ao provedor de imagens não autorizado.')
                     if response.status_code == 429:
-                        raise ImageGenerationError('IMAGE_RATE_LIMIT', 'Quota de imagens atingida.')
+                        try:
+                            diagnostic = response.json()
+                        except ValueError:
+                            diagnostic = None
+                        raise self.quota.limit(diagnostic, response.headers.get('retry-after'))
                     if response.status_code != 200:
                         if response.status_code in (408, 500, 502, 503, 504) and attempt < self.settings.max_attempts:
                             continue
-                        raise ImageGenerationError('IMAGE_UNAVAILABLE', 'O provedor de imagens não concluiu a geração.')
+                        code = 'IMAGE_UNAVAILABLE' if response.status_code in (408, 500, 502, 503, 504) else 'IMAGE_PROVIDER_ERROR'
+                        raise ImageGenerationError(code, 'O provedor de imagens não concluiu a geração.')
                     try:
                         payload = response.json()
                     except (ValueError, TypeError):
@@ -252,3 +263,18 @@ class LocalImageBackgroundGenerator:
     def generate(self, plan: VisualPlan) -> ImageReference:
         return self.storage.save(self.image_path.read_bytes(), self.media_type,
                                  kind="background", metadata={"source": "local_test", "channel": plan.channel.value})
+
+
+class LocalAssetBackgroundGenerator:
+    """Neutral local canvas; PillowComposer adds the existing product photo/logo/font."""
+    def __init__(self, storage):
+        self.storage = storage
+
+    def generate(self, plan: VisualPlan) -> ImageReference:
+        size = {Channel.FEED: (1080, 1350), Channel.STORY: (1080, 1920)}.get(plan.channel)
+        if size is None:
+            raise ImageGenerationError('IMAGE_CHANNEL_UNSUPPORTED', 'Canal sem composição local configurada.')
+        output = BytesIO()
+        Image.new('RGB', size, '#FFFFFF').save(output, format='PNG')
+        return self.storage.save(output.getvalue(), 'image/png', kind='background',
+            metadata={'source': 'local_assets', 'channel': plan.channel.value}, width=size[0], height=size[1])

@@ -10,14 +10,15 @@ from app.models import PieceModel
 from app.schemas import (BackgroundGenerationMetadata, ImageReference, RenderRequest,
                          RenderStatus, VisualMetadata, VisualPlan, VisualProcessingState)
 from app.services.composition import CompositionError, default_template
-from app.services.image_generation import ImageGenerationError, background_prompt, plan_identifier
+from app.services.image_generation import ImageGenerationError, LocalAssetBackgroundGenerator, background_prompt, plan_identifier
+from app.services.availability import IMAGE_FALLBACK_CODES
 from app.services.workflow import fail, invalidate_stale
 
 router = APIRouter(tags=['render'])
 
 
 def _visual(piece) -> VisualMetadata:
-    return VisualMetadata.model_validate(piece.content.get('visual') or {})
+    return VisualMetadata.model_validate(piece.content.get('_render_job') or piece.content.get('visual') or {})
 
 
 def _status(piece) -> RenderStatus:
@@ -25,7 +26,7 @@ def _status(piece) -> RenderStatus:
 
 
 def _save_visual(piece, visual: VisualMetadata) -> None:
-    piece.content = {**piece.content, 'visual': visual.model_dump(mode='json')}
+    piece.content = {**piece.content, '_render_job': visual.model_dump(mode='json')}
 
 
 def _background_from_piece(app, piece, visual: VisualMetadata) -> ImageReference | None:
@@ -51,6 +52,11 @@ def start_render(piece_id: str, body: RenderRequest, request: Request,
             if piece is None:
                 fail(404, 'PIECE_NOT_FOUND', 'Peça não encontrada.')
             visual = _visual(piece)
+            if body.use_local_assets:
+                if body.regenerate_background or body.source_piece_id:
+                    fail(422, 'INVALID_RENDER_OPTIONS', 'A composição local não pode ser combinada com geração ou reutilização de fundo.')
+                if visual.error_code not in IMAGE_FALLBACK_CODES and not (body.request_id and body.request_id == visual.render_request_id):
+                    fail(409, 'LOCAL_FALLBACK_UNAVAILABLE', 'A composição alternativa exige uma falha temporária do provedor.')
             if visual.plan is None:
                 fail(409, 'VISUAL_PLAN_MISSING', 'Esta peça não possui plano visual compatível.')
             if visual.state in (VisualProcessingState.PROCESSING, VisualProcessingState.BACKGROUND_READY):
@@ -63,7 +69,7 @@ def start_render(piece_id: str, body: RenderRequest, request: Request,
                 result = _status(piece)
                 db.commit()
                 return result
-            if visual.state == VisualProcessingState.COMPOSED and not (body.force or body.regenerate_background or body.source_piece_id):
+            if visual.state == VisualProcessingState.COMPOSED and not (body.force or body.regenerate_background or body.source_piece_id or body.use_local_assets):
                 response.status_code = 200
                 result = _status(piece)
                 db.commit()
@@ -79,9 +85,11 @@ def start_render(piece_id: str, body: RenderRequest, request: Request,
                     background = _background_from_piece(app, source, _visual(source))
                     if background is None:
                         fail(409, 'BACKGROUND_MISSING', 'A peça de origem não possui fundo.')
+                elif body.use_local_assets:
+                    background = None
                 else:
                     background = None if body.regenerate_background else _background_from_piece(app, piece, visual)
-                if background is None and app.state.background_generator is None:
+                if background is None and app.state.background_generator is None and not body.use_local_assets:
                     raise CompositionError('IMAGE_PROVIDER_UNCONFIGURED', 'Configure o provedor de fundos ou reutilize um fundo existente.')
             except CompositionError as exc:
                 visual.state = VisualProcessingState.BLOCKED
@@ -94,6 +102,9 @@ def start_render(piece_id: str, body: RenderRequest, request: Request,
             request_id = body.request_id or str(uuid4())
             visual.state = VisualProcessingState.PROCESSING
             visual.render_request_id = request_id
+            visual.composition_source = 'local_assets' if body.use_local_assets else None
+            visual.fallback_reason = visual.error_code if body.use_local_assets else None
+            visual.retry_after_seconds = None
             visual.plan_id = plan_identifier(visual.plan)
             visual.source_piece_id = body.source_piece_id
             visual.background = background
@@ -130,10 +141,12 @@ def run_visual_render(app, piece_id: str, request_id: str) -> None:
         plan = VisualPlan.model_validate(visual.plan.model_dump(mode='json'))
         background = visual.background
         snapshot = SimpleNamespace(id=piece.id, campaign_id=piece.campaign_id,
-                                   content=dict(piece.content), state=piece.state)
+            content={key: value for key, value in piece.content.items() if key != '_render_job'}, state=piece.state)
+        snapshot.content['visual'] = visual.model_dump(mode='json')
     try:
         if background is None:
-            generator = app.state.background_generator
+            generator = (LocalAssetBackgroundGenerator(app.state.image_storage)
+                if visual.composition_source == 'local_assets' else app.state.background_generator)
             if generator is None:
                 raise ImageGenerationError('IMAGE_PROVIDER_UNCONFIGURED', 'Provedor de fundos indisponível.')
             if hasattr(generator, 'generate_with_metadata'):
@@ -142,7 +155,7 @@ def run_visual_render(app, piece_id: str, request_id: str) -> None:
             else:
                 background = generator.generate(plan)
                 image_metadata = BackgroundGenerationMetadata(generation_id=str(uuid4()),
-                    plan_id=plan_identifier(plan), model='local_test', prompt=background_prompt(plan),
+                    plan_id=plan_identifier(plan), model='local_assets' if visual.composition_source == 'local_assets' else 'local_test', prompt=background_prompt(plan),
                     created_at=datetime.now(timezone.utc), attempts=1, duration_seconds=0)
             with app.state.sessions() as db:
                 db.execute(text('BEGIN IMMEDIATE'))
@@ -157,6 +170,11 @@ def run_visual_render(app, piece_id: str, request_id: str) -> None:
                 _save_visual(current, current_visual)
                 db.commit()
             snapshot.content['visual'] = current_visual.model_dump(mode='json')
+        current_visual = VisualMetadata.model_validate(snapshot.content['visual'])
+        stored_source = app.state.image_storage.get(background).metadata.get('metadata', {}).get('source')
+        current_visual.composition_source = ('local_assets' if stored_source == 'local_assets' else
+            'local_test' if stored_source == 'local_test' else 'ai')
+        snapshot.content['visual'] = current_visual.model_dump(mode='json')
         template = default_template(plan.layout, plan.channel)
         app.state.composer.compose_model(snapshot, background, template)
         with app.state.sessions() as db:
@@ -185,6 +203,14 @@ def _mark_failed(app, piece_id: str, request_id: str, code: str, message: str, c
             if visual.render_request_id == request_id:
                 visual.state = VisualProcessingState.FAILED
                 visual.error_code, visual.error_message = code, message
+                visual.retry_after_seconds = getattr(cause, 'retry_after_seconds', None)
+                previous = VisualMetadata.model_validate(piece.content.get('visual') or {})
+                visual.final_image = previous.final_image
+                if visual.final_image:
+                    visual.composition_source = previous.composition_source
+                    visual.background = previous.background
+                    visual.product_image = previous.product_image
+                    visual.template = previous.template
                 if isinstance(cause, ImageGenerationError) and cause.generation_id:
                     visual.image_generation = BackgroundGenerationMetadata(
                         generation_id=cause.generation_id, plan_id=cause.plan_id,

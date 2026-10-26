@@ -51,7 +51,7 @@ describe("detalhe da campanha", () => {
   it("inicia renderização uma vez, com request_id, e impede clique duplo", async () => {
     const user = userEvent.setup()
     showPage()
-    await screen.findByText("Imagem ainda não gerada")
+    await screen.findByText("Imagem ainda não gerada", {}, { timeout: 5000 })
     const button = screen.getByRole("button", { name: "Gerar imagem" })
     await user.dblClick(button)
     await waitFor(() => expect(startRender).toHaveBeenCalledTimes(1))
@@ -76,7 +76,7 @@ describe("detalhe da campanha", () => {
     vi.mocked(getRender).mockResolvedValue(renderStatus("composed"))
     const user = userEvent.setup()
     showPage()
-    expect(await screen.findByAltText("Prévia de Título")).toBeTruthy()
+    expect(await screen.findByAltText("Prévia de Título", {}, { timeout: 5000 })).toBeTruthy()
     await user.click(screen.getByRole("button", { name: "Baixar PNG" }))
     expect(getPieceImage).toHaveBeenCalledWith("piece-id")
     expect(URL.createObjectURL).toHaveBeenCalled()

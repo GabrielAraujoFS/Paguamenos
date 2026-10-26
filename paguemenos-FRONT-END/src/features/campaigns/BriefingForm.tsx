@@ -6,7 +6,8 @@ import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { normalizeHttpError } from "@/api/errors"
 import { queryKeys } from "@/api/query-keys"
-import { generateCampaign } from "@/api/services/campaigns"
+import { generateCampaign, generateDemonstration } from "@/api/services/campaigns"
+import { contentOrigin } from "@/features/campaigns/content-origin"
 import type { Campaign, Channel, Product } from "@/contracts/api"
 import { formatPrice } from "@/features/catalog/format-price"
 import { applyBriefingServerErrors } from "@/features/campaigns/briefing-errors"
@@ -26,6 +27,7 @@ export function BriefingForm({ products, initialProductId }: { products: Product
   const [created, setCreated] = useState<Campaign | null>(null)
   const [requestError, setRequestError] = useState<unknown>(null)
   const mutation = useMutation({ mutationFn: generateCampaign })
+  const demo = useMutation({ mutationFn: ({ values, token }: { values: BriefingFormValues; token: string }) => generateDemonstration(toGenerateRequest(values), token), retry: false })
   const {
     register, handleSubmit, control, setValue, setError, clearErrors, reset,
     formState: { errors },
@@ -44,9 +46,20 @@ export function BriefingForm({ products, initialProductId }: { products: Product
   const selectedChannels = useWatch({ control, name: "channels" }) ?? []
   const selectedProduct = products.find((product) => product.id === selectedProductId)
   const normalizedRequestError = requestError === null ? null : normalizeHttpError(requestError)
+  const demoToken = normalizedRequestError?.details.find((detail) => typeof detail.demo_token === "string")?.demo_token
+  const canDemonstrate = typeof demoToken === "string" && ["GENERATION_RATE_LIMIT", "GENERATION_QUOTA_EXCEEDED", "GENERATION_UNAVAILABLE", "GENERATION_TIMEOUT"].includes(normalizedRequestError?.code ?? "")
+  const busy = mutation.isPending || demo.isPending
+
+  async function continueDemonstration(values: BriefingFormValues) {
+    if (busy || typeof demoToken !== "string") return
+    try {
+      setCreated(await demo.mutateAsync({ values, token: demoToken }))
+      setRequestError(null)
+    } catch (error) { setRequestError(error) }
+  }
 
   async function onSubmit(values: BriefingFormValues) {
-    if (mutation.isPending) return
+    if (busy) return
     clearErrors()
     setRequestError(null)
     try {
@@ -66,6 +79,7 @@ export function BriefingForm({ products, initialProductId }: { products: Product
       <section className="rounded-2xl border border-blue-200 bg-white p-6 shadow-sm sm:p-8" role="status" aria-live="polite">
         <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">Campanha criada</p>
         <h2 className="mt-2 text-2xl font-bold text-blue-950">{created.briefing.campaign_name}</h2>
+        <p className="mt-3 rounded-lg bg-blue-50 p-3 text-sm font-semibold text-blue-950">{contentOrigin(created.generation)}</p>
         <p className="mt-3 text-sm text-slate-600">Guarde o ID para consultar a campanha depois. As peças geradas ainda não foram validadas nem aprovadas.</p>
         <p className="mt-4 break-all rounded-lg bg-slate-50 p-3 font-mono text-sm text-slate-800">{created.id}</p>
         <ul className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -78,6 +92,7 @@ export function BriefingForm({ products, initialProductId }: { products: Product
         </ul>
         <div className="mt-7 flex flex-wrap gap-3">
           <Button asChild><Link to={`/campaigns/${encodeURIComponent(created.id)}`}>Abrir campanha</Link></Button>
+          <Button type="button" variant="outline" onClick={() => { setCreated(null); setRequestError(null) }}>Retomar briefing</Button>
           <Button type="button" onClick={() => { reset(); setCreated(null); setRequestError(null) }}>Criar outro briefing</Button>
           <Button asChild variant="outline"><Link to="/products">Voltar ao catálogo</Link></Button>
         </div>
@@ -151,13 +166,14 @@ export function BriefingForm({ products, initialProductId }: { products: Product
         <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-950">
           <p className="font-semibold">Não foi possível gerar a campanha.</p>
           <p className="mt-1">{normalizedRequestError.message}</p>
+          {canDemonstrate && <div className="mt-3 space-y-3"><p>A geração com IA está temporariamente indisponível. Seu briefing foi preservado. Você pode tentar novamente mais tarde ou criar textos demonstrativos, sem IA real.</p><Button type="button" variant="outline" disabled={busy} onClick={() => void handleSubmit(continueDemonstration)()}>Continuar com versão demonstrativa</Button></div>}
           {normalizedRequestError.code && <p className="mt-1 text-xs">Código: {normalizedRequestError.code}</p>}
         </div>
       )}
       <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-500">A geração cria conteúdo em rascunho; a validação é uma etapa posterior.</p>
-        <Button type="submit" size="lg" disabled={mutation.isPending} className="w-full bg-blue-900 text-white hover:bg-blue-800 sm:w-auto">
-          {mutation.isPending ? "Gerando campanha…" : "Gerar campanha"}
+        <Button type="submit" size="lg" disabled={busy} className="w-full bg-blue-900 text-white hover:bg-blue-800 sm:w-auto">
+          {busy ? "Gerando campanha…" : "Gerar campanha"}
         </Button>
       </div>
     </form>

@@ -67,6 +67,18 @@
 
 ## Registro de alterações
 
+### Fallback explícito de IA — 2026-10-26
+
+- Serviços existentes inspecionados antes da alteração: mock textual, carregador local e compositor reutilizados; não havia continuação explícita após falha. Nenhum provedor foi substituído globalmente e nenhum fallback é disparado automaticamente.
+- Textos: erro temporário/429 fornece oferta vinculada ao briefing/produto/regras. Somente o botão **Continuar com versão demonstrativa** repete a requisição com demo_token e usa o mock. O formulário preserva dados e **Retomar briefing** permite nova tentativa posterior. Origem persistida e identificada na confirmação, nos cartões e no detalhe; campanhas legadas têm origem não registrada.
+- Imagens: somente **Criar peça com imagens disponíveis** solicita use_local_assets após falha elegível. Fundo neutro e assets locais passam pelo compositor e pelas regras existentes. Origem local/IA demonstrada na interface e no header do PNG. O estado operacional do job foi separado do conteúdo validado para preservar revisão, aprovação e PNG anterior em caso de falha; sucesso de uma nova composição exige revalidação.
+- Cooldown para 429: pausa curta/Retry-After ou pausa conservadora de 24h para cota diária identificada. O controle e as ofertas são locais ao processo; detalhes em [fallback.md](../../docs/fallback.md). Bloqueios de segurança, erros de contrato/briefing/autenticação e HTTP 400 não oferecem fallback.
+- Contratos estendidos com campos opcionais, sem novas rotas: Campaign.generation, RenderRequest.use_local_assets e origem/diagnóstico em VisualMetadata. Snapshots backend/frontend/raiz sincronizados; expectativas de contrato e classificação HTTP 400 atualizadas explicitamente, sem relaxar validações.
+- Backend: **219 testes passaram**, incluindo 16 novos casos de fallback, consentimento, 429/503, cooldown, segurança, preservação de texto aprovado, PNG anterior, mock e disabled. Um aviso Starlette/HTTPX conhecido permaneceu. Comando: python -m pytest -q -p no:cacheprovider --tb=short.
+- Frontend: **33 testes passaram, 1 teste HTTP opt-in ignorado**. Comando final: vitest run --pool=vmThreads --maxWorkers=1 --testTimeout=20000. Um worker da primeira execução não iniciou; os 8 testes visuais passaram isoladamente. Dois limites de espera inicial de UI foram ampliados de 1 para 5 segundos para a rodada completa, sem mudar as asserções. Os novos testes confirmam ausência de ação automática, preservação do briefing e ação correspondente à funcionalidade que falhou.
+- TypeScript (tsc -b), lint (eslint .), build de produção (vite build) e git diff --check passaram. Node 24.22.1. Testes externos sempre simulados, com chaves fictícias e SQLite/armazenamento temporários; nenhuma chamada real de IA ou alteração de credenciais/.env/volumes/banco existente.
+- Arquivos e limitações detalhados em [fallback.md](../../docs/fallback.md). Inspeção manual no navegador e disponibilidade dos provedores reais não foram verificadas. Nenhum git commit, merge ou push foi executado.
+
 ### Integração de texto, revisão e imagens — 2026-10-26
 
 - Conflitos comparados entre HEAD e MERGE_HEAD. Serviços de consulta/validação/revisão unificados sem duplicação, preservando renderização e download de PNG. Cartões inteiros continuam navegáveis; briefing abre a mesma tela; rotas em português e inglês são aliases.

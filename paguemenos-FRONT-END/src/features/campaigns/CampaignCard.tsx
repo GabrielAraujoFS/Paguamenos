@@ -1,5 +1,6 @@
 import type { Campaign, PieceState } from "@/contracts/api"
 import { Link } from "react-router"
+import { contentOrigin } from "@/features/campaigns/content-origin"
 
 const stateLabels: Record<PieceState, string> = {
   draft: "Rascunho",
@@ -24,6 +25,7 @@ export function CampaignCard({ campaign }: { campaign: Campaign }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h2 className="break-words text-lg font-bold text-blue-950">{campaign.briefing.campaign_name}</h2>
+          <p className="mt-1 text-xs text-slate-500">{contentOrigin(campaign.generation)}</p>
           <p className="mt-2 line-clamp-2 text-sm text-slate-600">{campaign.briefing.objective}</p>
         </div>
         <p className="shrink-0 text-xs text-slate-500">{Number.isNaN(createdAt.getTime()) ? "Data indisponível" : dateFormatter.format(createdAt)}</p>

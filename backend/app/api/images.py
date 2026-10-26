@@ -56,4 +56,5 @@ def get_piece_image(piece_id: str, request: Request):
             'Content-Disposition': f'inline; filename="preview-{piece.id}.png"',
             'X-Creative-Asset-Use': 'internal-preview',
             'X-Creative-Approval-State': piece.state,
+            'X-Creative-Composition-Source': visual.get('composition_source') or 'unknown',
         })

@@ -69,7 +69,7 @@ def test_openai_png_is_saved_with_prompt_and_usage(tmp_path):
 
 
 @pytest.mark.parametrize('status,code', [(401, 'IMAGE_AUTH_ERROR'), (403, 'IMAGE_AUTH_ERROR'),
-    (429, 'IMAGE_RATE_LIMIT'), (400, 'IMAGE_UNAVAILABLE')])
+    (429, 'IMAGE_RATE_LIMIT'), (400, 'IMAGE_PROVIDER_ERROR')])
 def test_openai_permanent_errors_are_sanitized_and_not_retried(tmp_path, status, code):
     calls = []
     def handler(request):
