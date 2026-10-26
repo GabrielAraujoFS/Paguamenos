@@ -1,5 +1,12 @@
 # Handoff técnico para o frontend — Creative Factory + Brand Guardian
 
+> **Atualização (26/10/2026):** este é o handoff histórico do fluxo textual. O
+> backend integrado também oferece plano visual, render assíncrono e prévia PNG
+> (`POST/GET /pieces/{piece_id}/render`, `GET /pieces/{piece_id}/image`), já
+> consumidos pelo frontend. O contrato atual está em [`../API_CONTRACT.md`](API_CONTRACT.md),
+> no OpenAPI e no [guia de composição](../../backend/docs/composicao.md). O projeto
+> agora mantém frontend e backend no mesmo repositório e oferece Compose na raiz.
+
 Este documento é autossuficiente para implementar a interface do **MVP local**. A referência campo a campo e os exemplos HTTP estão em [API_CONTRACT.md](API_CONTRACT.md); a especificação exportada e verificada está em [openapi.json](openapi.json); a sequência de trabalho está em [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md). Os caminhos `backend/...` citados permitem auditoria, mas o frontend não precisa do código do backend para seguir o contrato descrito aqui.
 
 **Atualização de 2026-10-24:** o backend vivo agora inclui `GET /campaigns` com paginação e filtros `status`, `channel` e `search`. A resposta `CampaignPage` contém `items`, `total`, `page`, `page_size` e `total_pages`. Consulte [API_CONTRACT.md](API_CONTRACT.md) para os limites. As declarações antigas abaixo sobre ausência de listagem representam o contrato anterior.
@@ -131,7 +138,7 @@ Portanto, a UI atual não precisa de página de login, guardas por perfil ou env
 
 Recomendação de navegação para o MVP: **Nova campanha** como entrada principal, **Catálogo** para consulta, e **Abrir campanha por ID** ou histórico local de IDs com aviso de escopo local. A tela de detalhes pode ter abas/cartões por canal, painel de validação e linha do tempo de decisões. Um menu de login/administração/dashboard criaria expectativa de funções inexistentes. Formulários de edição ou botões de exclusão não devem aparecer como operacionais. Componentes reutilizáveis recomendados: seletor de produto, chips de canal, campos com contadores, cartão de peça, selo de estado, lista de resultados com severidade, histórico de validações/revisões, confirmação de decisão, feedback de erro e espera. São escolhas de interface, não exigências da API.
 
-## 6. Execução e conexão a partir de outro repositório
+## 6. Execução local
 
 No repositório do backend, PowerShell (Windows), com Python 3.13 disponível:
 
