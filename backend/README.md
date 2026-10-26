@@ -1,11 +1,16 @@
 # Creative Factory + Brand Guardian — backend MVP
 
 Python 3.13, FastAPI, Pydantic, SQLite e SQLAlchemy. Fluxo local:
-briefing → geração textual (mock ou Gemini) → validação objetiva → revisão humana.
+briefing → textos e plano visual (mock ou Gemini) → fundo → composição Pillow → validação → revisão humana.
 Dados, ofertas e regras são sintéticos e não representam regras oficiais de marcas reais.
-Gemini é opcional; mock permanece padrão. Sem frontend, imagens, autenticação complexa ou publicação automática.
+Gemini e geração de fundos são opcionais; mock textual permanece padrão. Não há autenticação ou publicação automática.
 Consulte [configuração de IA e nível gratuito](docs/geracao-ia.md).
+Consulte [composição local com Pillow](docs/composicao.md) para os templates e testes sintéticos.
+O mesmo documento descreve a seleção de fundos por `IMAGE_GENERATION_PROVIDER` (`disabled`, `google`, `openai` ou `mock`).
+Consulte [BrandGuard visual](docs/brandguard-visual.md) para evidências, regras e limites das verificações.
 Mantenha o repositório privado. Nenhum commit ou publicação é necessário para executar.
+
+`GET /pieces/{piece_id}/image` entrega somente o PNG final da peça em estado visual `composed`. A referência vem dos metadados persistidos e é verificada pelo storage (ID opaco, SHA-256 e tipo PNG); a requisição não aceita caminhos. A resposta inclui `Cache-Control: private, no-store`, `X-Creative-Asset-Use: internal-preview` e `X-Creative-Approval-State`. O arquivo é prévia interna até aprovação humana. Como este MVP não tem autenticação nem autorização, mantenha a API local ou protegida por controle de acesso antes de expor imagens e operações de campanha/revisão publicamente.
 
 ## Instalação e execução
 
@@ -57,6 +62,8 @@ com identificadores de revisão simulados e sem autenticação.
 | GET | /campaigns/{campaign_id} | 200 | Campanha, validações e revisões |
 | POST | /campaigns/{campaign_id}/validate | 200 | Campanha com nova validação por peça |
 | POST | /pieces/{piece_id}/review | 200 | Peça com decisão e histórico |
+| POST | /pieces/{piece_id}/render | 202/200 | Inicia ou reutiliza processamento visual |
+| GET | /pieces/{piece_id}/render | 200 | Estado e metadados visuais da peça |
 
 Não há corpo na validação. O estado pertence à peça, e não à campanha.
 404 indica recurso inexistente; 422 indica entrada inválida; 409 bloqueia aprovação;

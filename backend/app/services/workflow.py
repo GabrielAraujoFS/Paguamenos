@@ -2,25 +2,29 @@ from fastapi import HTTPException
 from app.models import ValidationModel
 from app.schemas import PieceState
 from app.services.validation import fingerprint, successful, validate_content
+from app.services.visual_validation import validate_visual, visual_fingerprint_evidence
 
 def fail(status: int, code: str, message: str):
     raise HTTPException(status, detail={"code": code, "message": message, "details": []})
 
-def context(piece, catalog, rules):
+def context(piece, catalog, rules, storage=None, composer=None):
     product = catalog.get(piece.content.get("product_id"))
-    return product, fingerprint(piece.content, product, rules)
+    evidence = visual_fingerprint_evidence(piece.content, storage, composer)
+    return product, fingerprint(piece.content, product, rules, evidence)
 
-def invalidate_stale(piece, catalog, rules):
-    _, current = context(piece, catalog, rules)
+def invalidate_stale(piece, catalog, rules, storage=None, composer=None):
+    _, current = context(piece, catalog, rules, storage, composer)
     last = piece.validations[-1] if piece.validations else None
     if piece.state in (PieceState.VALIDATED, PieceState.APPROVED):
         if last is None or last.fingerprint != current or not last.success:
             piece.state = PieceState.DRAFT
     return current
 
-def validate_piece(piece, catalog, rules):
-    product, current = context(piece, catalog, rules)
+def validate_piece(piece, catalog, rules, storage=None, composer=None):
+    product, current = context(piece, catalog, rules, storage, composer)
     results = validate_content(piece.content, product, rules)
+    if storage is not None and composer is not None:
+        results.extend(validate_visual(piece.content, storage, composer, rules))
     success = successful(results)
     preserve_approval = piece.state == PieceState.APPROVED and bool(piece.validations) and piece.validations[-1].fingerprint == current
     piece.validations.append(ValidationModel(fingerprint=current, success=success,

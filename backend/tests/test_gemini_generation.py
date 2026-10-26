@@ -17,11 +17,21 @@ from app.settings import GenerationConfig
 BRIEF = dict(campaign_name='Demo', product_id='syn-001', objective='Apresentar',
              target_audience='Adultos', channels=['feed'])
 COPY = dict(channel='feed', title='Conheça Sabonete Brisa', subtitle='Cuidado diário.', cta='Confira')
+VISUAL = dict(channel='feed', art_direction='Fundo claro e equilibrado',
+    background_prompt='Fundo abstrato em tons suaves com espaço livre', layout='produto_direita',
+    palette=['#DDEEFF'], concept='Clareza', visual_style='Minimalista',
+    scenario='Estúdio abstrato', lighting='Difusa', decorative_elements=['formas suaves'])
 
 
 def response_for(pieces=None, finish='STOP'):
     return {'candidates': [{'finishReason': finish, 'content': {'parts': [
         {'text': json.dumps({'pieces': pieces if pieces is not None else [COPY]})}
+    ]}}]}
+
+
+def package_response_for(pieces=None):
+    return {'candidates': [{'finishReason': 'STOP', 'content': {'parts': [
+        {'text': json.dumps({'pieces': pieces if pieces is not None else [COPY], 'visual_plans': [VISUAL]})}
     ]}}]}
 
 
@@ -119,7 +129,7 @@ def test_failure_persists_nothing_and_never_falls_back(tmp_path, caplog):
 @pytest.mark.parametrize('subtitle,rule', [('Por R$ 0,01', 'TEXT_PRICE_MATCH'),
     ('Ganhe 50% de desconto', 'TEXT_OFFER_MATCH'), ('Cura garantida', 'FORBIDDEN_EXPRESSION')])
 def test_gemini_copy_still_requires_guardian_and_human(tmp_path, subtitle, rule):
-    service = provider(lambda request: httpx.Response(200, json=response_for([COPY | {'subtitle': subtitle}])))
+    service = provider(lambda request: httpx.Response(200, json=package_response_for([COPY | {'subtitle': subtitle}])))
     app = create_app(database_url='sqlite:///' + (tmp_path / 'guardian.db').as_posix(), generator=service)
     with TestClient(app) as client:
         campaign = client.post('/campaigns/generate', json=BRIEF).json()
@@ -139,7 +149,7 @@ def test_generation_does_not_hold_sqlite_write_lock(tmp_path):
         with app.state.engine.connect() as connection:
             connection.execute(text('BEGIN IMMEDIATE'))
             connection.rollback()
-        return httpx.Response(200, json=response_for())
+        return httpx.Response(200, json=package_response_for())
     app = create_app(database_url='sqlite:///' + (tmp_path / 'lock.db').as_posix(), generator=provider(handler))
     with TestClient(app) as client:
         campaign = client.post('/campaigns/generate', json=BRIEF)

@@ -1,3 +1,4 @@
+import { Link } from "react-router"
 import type { Campaign, PieceState } from "@/contracts/api"
 
 const stateLabels: Record<PieceState, string> = {
@@ -37,6 +38,7 @@ export function CampaignCard({ campaign }: { campaign: Campaign }) {
           ))}
         </div>
       </div>
+      <Link to={`/campanhas/${encodeURIComponent(campaign.id)}`} className="mt-4 inline-block text-sm font-semibold text-blue-800 underline">Abrir campanha</Link>
     </article>
   )
 }
