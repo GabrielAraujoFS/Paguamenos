@@ -42,6 +42,6 @@ def piece_output(piece):
             "reviewer_id": r.reviewer_id, "comment": r.comment, "fingerprint": r.fingerprint} for r in piece.reviews]}
 
 def campaign_output(campaign):
-    return {"id": campaign.id, "created_at": campaign.created_at, "briefing": campaign.briefing,
+    return {"id": campaign.id, "created_at": campaign.created_at, "briefing": {"show_price": True, **campaign.briefing},
         "generation": campaign.pieces[0].content.get('text_generation') if campaign.pieces else None,
         "pieces": [piece_output(p) for p in campaign.pieces]}

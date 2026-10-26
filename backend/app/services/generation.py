@@ -66,8 +66,8 @@ class MockGenerationService:
             layout = "produto_direita" if channel == Channel.FEED else "produto_centro"
             plans.append(VisualPlan(channel=channel, art_direction="Composição abstrata clara e equilibrada",
                 background_prompt="Fundo abstrato suave com formas orgânicas e áreas livres",
-                layout=layout, palette=["#DDEEFF", "#FFFFFF"], concept="Clareza e cuidado",
-                visual_style="Minimalista", scenario="Estúdio abstrato",
+                layout=layout, palette=["#DDEEFF", "#FFFFFF"], concept={"Verão": "Leveza e luminosidade", "Dia das Mães": "Acolhimento e proximidade", "Dia dos Pais": "Acolhimento e proximidade", "Beleza": "Equilíbrio e delicadeza", "Volta às aulas": "Organização e energia", "Autocuidado": "Calma e cuidado", "Saúde e prevenção": "Clareza e serenidade"}.get(briefing.theme, "Clareza e cuidado"),
+                visual_style=briefing.visual_style or "Minimalista", scenario="Estúdio abstrato",
                 lighting="Difusa e uniforme", decorative_elements=["formas suaves"]))
         return GenerationPackage(pieces=self.generate(briefing, product),
             visual_plans=validate_visual_plans(plans, briefing.channels, product),

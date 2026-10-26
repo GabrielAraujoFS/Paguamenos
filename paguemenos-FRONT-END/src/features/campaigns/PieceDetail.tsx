@@ -47,7 +47,7 @@ export function PieceDetail({ piece, campaignId, sourcePieces, busy, onBusyChang
       <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-950">{labels[piece.state]}</span>
     </header>
     <dl className="grid gap-4 text-sm sm:grid-cols-2">
-      {[["Título", piece.title], ["Subtítulo", piece.subtitle], ["CTA", piece.cta], ["Disclaimer", piece.disclaimer], ["Produto", `${piece.product_name} (${piece.product_id})`], ["Preço", formatPrice(piece.price)], ["Oferta autorizada", piece.authorized_offer]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="font-semibold text-blue-950">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-slate-700">{value}</dd></div>)}
+      {[["Título", piece.title], ["Subtítulo", piece.subtitle], ["CTA", piece.cta], ["Disclaimer", piece.disclaimer], ["Produto", `${piece.product_name} (${piece.product_id})`], [piece.show_price === false ? "Preço interno (não publicado)" : "Preço", formatPrice(piece.price)], ["Oferta autorizada (catálogo)", piece.authorized_offer]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="font-semibold text-blue-950">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-slate-700">{value}</dd></div>)}
     </dl>
     <PieceVisual piece={piece} campaignId={campaignId} sourcePieces={sourcePieces} disabled={busy} onBusyChange={onBusyChange} />
     <section className="border-t border-slate-200 pt-5" aria-label="Brand Guardian">

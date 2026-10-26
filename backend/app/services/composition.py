@@ -14,6 +14,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps, UnidentifiedImageError
 from app.schemas import (Channel, GenerationMetadata, ImageReference, Piece,
                          TemplateConfig, VisualMetadata, VisualProcessingState)
 from app.services.storage import LocalImageStorage
+from app.services.publication import published_texts, has_price
 
 
 class CompositionError(Exception):
@@ -147,6 +148,43 @@ class PillowComposer:
         return boxes
 
     @staticmethod
+    def publication_layout(template, content):
+        """Versioned layout: existing artifacts retain their original geometry."""
+        if content.get('composition_version', 1) == 1:
+            return PillowComposer._layout(template)
+        margins = {side: template.safe_area.get(side, 64) for side in ('left', 'right', 'top', 'bottom')}
+        if set(template.safe_area) - set(margins):
+            raise CompositionError('TEMPLATE_INVALID', 'Margens inválidas.')
+        left, top = margins['left'], margins['top']
+        width = template.width - left - margins['right']
+        height = template.height - top - margins['bottom']
+        gap = max(12, int(height * .009))
+        boxes = {}
+        cursor = top
+        for name, ratio in [('title', .115), ('subtitle', .085), ('product_name', .045)]:
+            size = int(height * ratio)
+            boxes[name] = Box(left, cursor, width, size)
+            cursor += size + gap
+        footer = template.height - margins['bottom']
+        rows = [('logo', .055), ('disclaimer', .05), ('cta', .06)]
+        texts = published_texts(content)
+        if 'offer' in texts:
+            rows.append(('offer', .05))
+        if 'price' in texts:
+            rows.append(('price', .075))
+        for name, ratio in rows:
+            size = int(height * ratio)
+            footer -= size
+            boxes[name] = Box(left, footer, width, size)
+            footer -= gap
+        inset = int(width * (.035 if template.name == 'produto_direita' else .05))
+        boxes['product'] = Box(left + inset, cursor, width - 2 * inset, footer - cursor)
+        for box in boxes.values():
+            PillowComposer._check_box(box, template, margins)
+        PillowComposer._check_collisions(boxes)
+        return boxes
+
+    @staticmethod
     def _fit_lines(draw: ImageDraw.ImageDraw, text: str, font_path: Path, box: Box,
                    min_size: int, max_size: int) -> tuple[ImageFont.FreeTypeFont, list[str], int]:
         for size in range(max_size, min_size - 1, -1):
@@ -189,7 +227,11 @@ class PillowComposer:
             raise CompositionError("TEMPLATE_UNSUPPORTED", "Template, canal ou dimensões não suportados.")
         if template.min_font_size > template.max_font_size:
             raise CompositionError("TEMPLATE_INVALID", "Limites de fonte inválidos.")
-        boxes = self._layout(template)
+        content = piece.model_dump(mode='json')
+        texts = published_texts(content)
+        if not piece.show_price and any(has_price(value) for value in texts.values()):
+            raise CompositionError('PUBLICATION_PRICE_HIDDEN', 'Texto obrigatório contém preço incompatível com a preferência de publicação.')
+        boxes = self.publication_layout(template, content)
         if not re.fullmatch(r"[A-Za-z0-9_-]+", piece.product_id):
             raise CompositionError("PRODUCT_ASSET_MISSING", "ID do produto inválido para asset.")
         try:
@@ -205,24 +247,35 @@ class PillowComposer:
             raise CompositionError("FONT_INVALID", "Fonte obrigatória inválida.") from None
         canvas = ImageOps.fit(bg, (template.width, template.height), method=Image.Resampling.LANCZOS, centering=(.5, .5))
         draw = ImageDraw.Draw(canvas, "RGBA")
-        for name in ("title", "subtitle", "product_name", "price", "offer", "cta", "disclaimer"):
+        modern = piece.composition_version == 2
+        style = piece.visual_style or 'Minimalista'
+        radius = {'Minimalista': 12, 'Moderno': 20, 'Acolhedor': 36, 'Vibrante': 28, 'Elegante': 4}[style]
+        if modern:
+            area = boxes['product']
+            # Geometric accents use only the existing authorized ink/panel palette.
+            if style in ('Acolhedor', 'Vibrante') or piece.theme in ('Verão', 'Autocuidado', 'Beleza'):
+                diameter = min(area.width, area.height)
+                x = area.x + (area.width - diameter) // 2
+                y = area.y + (area.height - diameter) // 2
+                draw.ellipse((x, y, x + diameter, y + diameter), fill=(255, 255, 255, 224), outline=(36, 92, 114, 255), width=3)
+            else:
+                draw.rounded_rectangle((area.x, area.y, area.x + area.width, area.y + area.height), radius=radius,
+                                       fill=(255, 255, 255, 224), outline=(36, 92, 114, 255), width=2)
+        for name in texts:
             box = boxes[name]
             draw.rounded_rectangle((box.x, box.y, box.x + box.width, box.y + box.height),
-                                   radius=12, fill=(255, 255, 255, 224))
+                                   radius=radius if modern else 12, fill=(36, 92, 114, 255) if modern and name == "cta" else (255, 255, 255, 224))
         self._paste_contained(canvas, product, boxes["product"])
         self._paste_contained(canvas, logo, boxes["logo"])
-        texts = {"title": piece.title, "subtitle": piece.subtitle, "product_name": piece.product_name,
-                 "price": f"R$ {piece.price:.2f}".replace(".", ","),
-                 "offer": piece.authorized_offer, "cta": piece.cta, "disclaimer": piece.disclaimer}
         for name, value in texts.items():
             box = boxes[name]
             inner = Box(box.x + 12, box.y + 6, box.width - 24, box.height - 12)
             if inner.width <= 0 or inner.height <= 0:
                 raise CompositionError("LAYOUT_OUT_OF_BOUNDS", "Área de texto insuficiente.")
             font, lines, line_height = self._fit_lines(draw, value, font_path, inner,
-                template.min_font_size, template.max_font_size if name in ("title", "price") else min(template.max_font_size, 48))
+                template.min_font_size, template.max_font_size if name in ("title", "price") else min(template.max_font_size, 42 if modern and name == "subtitle" else 48))
             for index, line in enumerate(lines):
-                draw.text((inner.x, inner.y + index * line_height), line, font=font, fill=(36, 92, 114, 255), anchor="lt")
+                draw.text((inner.x, inner.y + index * line_height), line, font=font, fill=(255, 255, 255, 255) if modern and name == "cta" else (36, 92, 114, 255), anchor="lt")
         output = BytesIO()
         canvas.save(output, format="PNG", optimize=True)
         product_ref = self.storage.save(product_data, "image/png", kind="product_asset",
@@ -234,6 +287,9 @@ class PillowComposer:
                       "template": template.model_dump(mode="json"), "state": VisualProcessingState.COMPOSED.value,
                       "created_at": created_at, "piece_id": piece.id,
                       "composition": {
+                          "composition_version": piece.composition_version,
+                          "show_price": piece.show_price,
+                          "theme": piece.theme, "visual_style": piece.visual_style,
                           "boxes": {name: vars(box) for name, box in boxes.items()},
                           "texts_sent_to_renderer": texts,
                           "product_id": piece.product_id,

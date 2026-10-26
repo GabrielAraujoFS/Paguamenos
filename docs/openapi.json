@@ -888,6 +888,42 @@
       },
       "Briefing": {
         "properties": {
+          "theme": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Theme"
+          },
+          "visual_style": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Minimalista",
+                  "Moderno",
+                  "Acolhedor",
+                  "Vibrante",
+                  "Elegante"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visual Style"
+          },
+          "show_price": {
+            "type": "boolean",
+            "title": "Show Price",
+            "default": false
+          },
           "campaign_name": {
             "type": "string",
             "maxLength": 2000,
@@ -1212,6 +1248,49 @@
       },
       "Piece": {
         "properties": {
+          "theme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Theme"
+          },
+          "visual_style": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Minimalista",
+                  "Moderno",
+                  "Acolhedor",
+                  "Vibrante",
+                  "Elegante"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visual Style"
+          },
+          "show_price": {
+            "type": "boolean",
+            "title": "Show Price",
+            "default": true
+          },
+          "composition_version": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ],
+            "title": "Composition Version",
+            "default": 1
+          },
           "id": {
             "type": "string",
             "title": "Id"

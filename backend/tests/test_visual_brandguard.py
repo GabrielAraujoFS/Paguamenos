@@ -16,7 +16,7 @@ from test_render_api import BRIEF, make_app, png
 
 
 def rendered(client):
-    campaign = client.post('/campaigns/generate', json=BRIEF).json()
+    campaign = client.post('/campaigns/generate', json=BRIEF | {'show_price': True}).json()
     piece_id = campaign['pieces'][0]['id']
     assert client.post(f'/pieces/{piece_id}/render', json={}).status_code == 202
     return campaign['id'], piece_id

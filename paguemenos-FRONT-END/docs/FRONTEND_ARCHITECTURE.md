@@ -97,3 +97,8 @@ Zod reproduz somente limites públicos de entrada: textos obrigatórios de 1–2
 | Médio | Snapshot OpenAPI não descreve todos os erros de execução | Confirmar integração com backend vivo na próxima etapa. |
 
 Não faltam os arquivos documentais essenciais para **planejar o MVP**: contrato, handoff, plano anterior e OpenAPI estão em `docs/`. Faltam, para recursos além dele, contratos de identidade/permissões, edição/regeneração, configuração de marca, publicação/mídia e implantação remota. Se a API viva divergir do snapshot, registrar a diferença antes de implementar comportamento dependente dela.
+
+
+## Personalização de briefing (2026-10-26)
+
+Tema personalizado é estado de formulário; `toGenerateRequest` envia somente o tema resolvido ao backend. Estilo e preço são campos independentes, preservados no mesmo formulário durante erro/fallback. Não se altera o objeto produto nem se oculta preço de catálogo: o detalhe distingue dados internos de publicação. A preferência persistida e a projeção de publicação/composição pertencem ao servidor. Não há novo endpoint ou estado de aprovação local. Compatibilidade dos PNGs antigos usa versão do compositor, sem recriação automática. Ver [contrato e limitações](../../docs/personalizacao-campanhas.md).

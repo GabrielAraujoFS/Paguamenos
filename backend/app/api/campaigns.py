@@ -13,6 +13,7 @@ from app.services.availability import TEXT_FALLBACK_CODES
 from app.models import CampaignModel, PieceModel
 from app.schemas import Briefing, Campaign, CampaignPage, Channel, ErrorResponse, GeneratedText, GenerationMetadata, PieceState, VisualMetadata
 from app.services.composition import default_template
+from app.services.publication import has_price
 from app.services.workflow import campaign_output, fail, invalidate_stale, validate_piece
 router = APIRouter(tags=["campaigns"])
 logger = logging.getLogger(__name__)
@@ -120,6 +121,10 @@ def generate(briefing: Briefing, request: Request, db: Session = Depends(generat
         fail(502, 'GENERATION_CONTRACT_ERROR', 'O gerador deve retornar apenas canal e campos textuais válidos.')
     if sorted(p.channel for p in generated) != sorted(briefing.channels):
         fail(502, "GENERATION_CONTRACT_ERROR", "O gerador deve retornar uma peça por canal solicitado.")
+    if not briefing.show_price and any(has_price(getattr(p, field)) for p in generated for field in ('title', 'subtitle', 'cta')):
+        if demo_entry:
+            demo_entry['busy'] = False
+        fail(502, 'GENERATION_CONTRACT_ERROR', 'O gerador incluiu preço em uma campanha sem preço publicado. Revise o briefing e tente novamente.')
     campaign = CampaignModel(briefing=briefing.model_dump(mode="json"))
     metadata = package.metadata if package is not None else GenerationMetadata(
         provider='gemini' if provider == 'GeminiGenerationService' else 'custom',
@@ -133,6 +138,8 @@ def generate(briefing: Briefing, request: Request, db: Session = Depends(generat
             template=default_template(plan.layout, channel) if plan is not None else None,
             generation=package.metadata if plan is not None else None)
         content.update(product_id=product.id, product_name=product.name, price=str(product.price),
+            theme=briefing.theme, visual_style=briefing.visual_style, show_price=briefing.show_price,
+            composition_version=2,
             authorized_offer=product.authorized_offer, disclaimer=rules['generation']['disclaimer'],
             text_generation=metadata.model_dump(mode='json'),
             visual=visual.model_dump(mode="json"))

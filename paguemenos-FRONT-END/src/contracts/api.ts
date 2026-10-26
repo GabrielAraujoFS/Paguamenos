@@ -17,7 +17,12 @@ export type PieceState = "draft" | "validated" | "approved" | "rejected"
 export type Severity = "info" | "warning" | "critical"
 export type Decision = "approved" | "rejected"
 
+export type VisualStyle = "Minimalista" | "Moderno" | "Acolhedor" | "Vibrante" | "Elegante"
+
 export interface Briefing {
+  theme?: string | null
+  visual_style?: VisualStyle | null
+  show_price?: boolean
   campaign_name: string
   product_id: string
   objective: string
@@ -56,6 +61,10 @@ export interface ReviewRecord {
 }
 
 export interface Piece {
+  theme?: string | null
+  visual_style?: VisualStyle | null
+  show_price?: boolean
+  composition_version?: 1 | 2
   id: string
   campaign_id: string
   channel: Channel

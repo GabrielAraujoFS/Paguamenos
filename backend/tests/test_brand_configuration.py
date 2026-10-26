@@ -33,8 +33,8 @@ def environment(tmp_path):
         yield client, app, rules
 
 
-def generate(client):
-    response = client.post('/campaigns/generate', json=BRIEFING)
+def generate(client, **changes):
+    response = client.post('/campaigns/generate', json=BRIEFING | changes)
     assert response.status_code == 201, response.text
     return response.json()
 
@@ -303,7 +303,7 @@ def test_config_change_invalidates_approval_without_erasing_audit(environment):
 def test_free_text_commercial_failure_blocks_approval(environment, subtitle, code):
     client, _, rules = environment
     rules['generation']['templates']['feed']['subtitle'] = subtitle
-    campaign = generate(client)
+    campaign = generate(client, show_price=True)
     piece = validate(client, campaign)[0]
     assert piece['state'] == 'draft'
     assert any(r['rule_code'] == code and not r['passed'] and r['severity'] == 'critical'
@@ -351,5 +351,6 @@ def test_openapi_snapshot_and_existing_response_contracts(environment):
     assert set(campaign['pieces'][0]) == {
         'id', 'campaign_id', 'channel', 'title', 'subtitle', 'cta', 'disclaimer',
         'product_id', 'product_name', 'price', 'authorized_offer', 'state', 'validations', 'reviews',
+        'theme', 'visual_style', 'show_price', 'composition_version',
     }
     assert [p['channel'] for p in campaign['pieces']] == BRIEFING['channels']

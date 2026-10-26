@@ -11,7 +11,7 @@ import { contentOrigin } from "@/features/campaigns/content-origin"
 import type { Campaign, Channel, Product } from "@/contracts/api"
 import { formatPrice } from "@/features/catalog/format-price"
 import { applyBriefingServerErrors } from "@/features/campaigns/briefing-errors"
-import { briefingSchema, toGenerateRequest, type BriefingFormValues } from "@/features/campaigns/briefing-schema"
+import { briefingSchema, toGenerateRequest, themeOptions, styleOptions, type BriefingFormValues } from "@/features/campaigns/briefing-schema"
 
 const channelOptions: Array<{ value: Channel; label: string }> = [
   { value: "feed", label: "Feed" },
@@ -34,6 +34,7 @@ export function BriefingForm({ products, initialProductId }: { products: Product
   } = useForm<BriefingFormValues>({
     resolver: zodResolver(briefingSchema),
     defaultValues: {
+      theme: "", custom_theme: "", visual_style: "Minimalista", show_price: "no",
       campaign_name: "",
       product_id: products.some((product) => product.id === initialProductId) ? initialProductId : "",
       objective: "",
@@ -42,6 +43,7 @@ export function BriefingForm({ products, initialProductId }: { products: Product
       additional_instructions: "",
     },
   })
+  const selectedTheme = useWatch({ control, name: "theme" })
   const selectedProductId = useWatch({ control, name: "product_id" })
   const selectedChannels = useWatch({ control, name: "channels" }) ?? []
   const selectedProduct = products.find((product) => product.id === selectedProductId)
@@ -125,6 +127,35 @@ export function BriefingForm({ products, initialProductId }: { products: Product
           <p className="mt-2"><span className="font-semibold">Oferta autorizada:</span> {selectedProduct.authorized_offer}</p>
         </div>
       )}
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div>
+          <label htmlFor="theme" className={labelClass}>Tema da campanha</label>
+          <select id="theme" className={inputClass} {...register("theme")}>
+            <option value="">Sem tema específico</option>
+            {themeOptions.map((theme) => <option key={theme}>{theme}</option>)}
+          </select>
+          {selectedTheme === "Personalizado" && <div className="mt-3">
+            <label htmlFor="custom-theme" className={labelClass}>Tema personalizado</label>
+            <input id="custom-theme" maxLength={120} className={inputClass} aria-invalid={Boolean(errors.custom_theme)} aria-describedby={errors.custom_theme ? "custom-theme-error" : undefined} {...register("custom_theme")} />
+            {errors.custom_theme && <p id="custom-theme-error" role="alert" className="mt-1 text-sm text-red-700">{errors.custom_theme.message}</p>}
+          </div>}
+        </div>
+        <div>
+          <label htmlFor="visual-style" className={labelClass}>Estilo visual</label>
+          <select id="visual-style" className={inputClass} {...register("visual_style")}>
+            {styleOptions.map((style) => <option key={style}>{style}</option>)}
+          </select>
+          <p className="mt-2 text-sm text-slate-600">O tema e o estilo respeitam a identidade e as regras obrigatórias da marca.</p>
+        </div>
+        <div>
+          <label htmlFor="show-price" className={labelClass}>Exibir preço na peça publicitária?</label>
+          <select id="show-price" className={inputClass} {...register("show_price")}>
+            <option value="no">Não</option><option value="yes">Sim</option>
+          </select>
+          <p className="mt-2 text-sm text-slate-600">O preço do catálogo permanece registrado para conferência. Não autoriza novas ofertas.</p>
+        </div>
+      </div>
 
       <div>
         <label htmlFor="objective" className={labelClass}>Objetivo</label>

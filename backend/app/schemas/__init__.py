@@ -29,8 +29,12 @@ class InputModel(BaseModel):
 
 Text = Annotated[str, Field(min_length=1, max_length=2000)]
 Money = Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=2)]
+VisualStyle = Literal['Minimalista', 'Moderno', 'Acolhedor', 'Vibrante', 'Elegante']
 
 class Briefing(InputModel):
+    theme: str | None = Field(default=None, min_length=1, max_length=120)
+    visual_style: VisualStyle | None = None
+    show_price: bool = False
     campaign_name: Text
     product_id: Text
     objective: Text
@@ -174,6 +178,10 @@ class ReviewRecord(ReviewDecision):
     fingerprint: str
 
 class Piece(BaseModel):
+    theme: str | None = None
+    visual_style: VisualStyle | None = None
+    show_price: bool = True
+    composition_version: Literal[1, 2] = 1
     id: str
     campaign_id: str
     channel: Channel

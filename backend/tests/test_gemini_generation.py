@@ -193,7 +193,7 @@ def test_gemini_copy_still_requires_guardian_and_human(tmp_path, subtitle, rule)
     service = provider(lambda request: httpx.Response(200, json=package_response_for([COPY | {'subtitle': subtitle}])))
     app = create_app(database_url='sqlite:///' + (tmp_path / 'guardian.db').as_posix(), generator=service)
     with TestClient(app) as client:
-        campaign = client.post('/campaigns/generate', json=BRIEF).json()
+        campaign = client.post('/campaigns/generate', json=BRIEF | {'show_price': True}).json()
         piece = campaign['pieces'][0]
         assert piece['price'] == '8.90' and piece['state'] == 'draft'
         review_url = f'/pieces/{piece["id"]}/review'

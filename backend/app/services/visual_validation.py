@@ -14,6 +14,7 @@ from pydantic import ValidationError
 
 from app.schemas import ImageReference, Severity, TemplateConfig, ValidationResult
 from app.schemas.configuration import parse_rules
+from app.services.publication import published_texts
 from app.services.composition import Box, CHANNEL_SIZES, TEMPLATE_NAMES, CompositionError, PillowComposer, default_template
 
 
@@ -135,7 +136,7 @@ def validate_visual(content: dict, storage, composer, rules) -> list[ValidationR
         boxes = {}
     if template_ok:
         try:
-            expected_boxes = PillowComposer._layout(template)
+            expected_boxes = PillowComposer.publication_layout(template, content)
             names_ok = set(boxes) == set(expected_boxes)
             bounds_ok = names_ok
             collision_ok = names_ok
@@ -159,9 +160,12 @@ def validate_visual(content: dict, storage, composer, rules) -> list[ValidationR
     check('VISUAL_OVERLAP', 'visual.template', collision_ok,
           'Áreas obrigatórias registradas não podem se sobrepor.')
 
-    expected_texts = {field: content.get(field) for field in ('title', 'subtitle', 'cta', 'disclaimer')}
-    expected_texts.update(product_name=content.get('product_name'), price=f"R$ {content.get('price')}".replace('.', ','),
-                          offer=content.get('authorized_offer'))
+    expected_texts = published_texts(content)
+    if content.get('composition_version', 1) == 2:
+        check('VISUAL_PUBLICATION_PREFERENCES', 'visual.final_image',
+              all(composition.get(key) == content.get(key) for key in
+                  ('composition_version', 'show_price', 'theme', 'visual_style')),
+              'Tema, estilo e publicação de preço devem corresponder à peça atual.')
     check('VISUAL_RENDER_INPUTS', 'visual.final_image',
           composition.get('texts_sent_to_renderer') == expected_texts
           and composition.get('product_id') == content.get('product_id'),

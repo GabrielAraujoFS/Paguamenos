@@ -1,5 +1,9 @@
 # Contrato da API — Creative Factory + Brand Guardian
 
+## Personalização aditiva (2026-10-26)
+
+`Briefing` aceita `theme` (opcional/nulo, 1–120 caracteres), `visual_style` (opcional/nulo: Minimalista, Moderno, Acolhedor, Vibrante, Elegante) e `show_price` (booleano, false nas novas campanhas). `Piece` expõe essas preferências e `composition_version` (1 legado, 2 novo). Campanhas persistidas sem preferência mantêm show_price=true e layout antigo. Catálogo e campos comerciais internos continuam completos. Não há novo endpoint nem migração. Os três snapshots OpenAPI foram exportados da aplicação FastAPI atual. Consulte [comportamento e roteiro manual](../../docs/personalizacao-campanhas.md).
+
 ## Continuação explícita após falha de IA (2026-10-26)
 
 Falhas temporárias/429 de texto podem incluir `demo_token` em `error.details`. Somente após consentimento, repetir POST `/campaigns/generate` com esse parâmetro opcional e o mesmo briefing cria uma versão mock. O servidor exige oferta válida vinculada ao briefing/produto/regras; 409 indica oferta expirada/alterada. Erros de validação, segurança, autenticação ou HTTP 400 não autorizam fallback. O campo opcional `Campaign.generation` registra provider/model/data e identifica conteúdo demonstrativo, inclusive após reabrir a campanha.
