@@ -38,6 +38,7 @@ temp/
 Thumbs.db
 Desktop.ini
 node_modules/
+frontend-git-backup/
 dist/
 build/
 *.egg-info/

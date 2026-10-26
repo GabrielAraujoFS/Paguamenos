@@ -1,5 +1,14 @@
 # Handoff técnico para o frontend — Creative Factory + Brand Guardian
 
+> **Nota de atualização (26/10/2026):** este handoff documenta a integração da API
+> e preserva decisões de contrato, mas sua descrição inicial cobre apenas o fluxo
+> textual. O backend agora também oferece plano visual, renderização assíncrona e
+> prévia PNG (`POST/GET /pieces/{piece_id}/render` e `GET /pieces/{piece_id}/image`).
+> O frontend já inclui esses recursos. Para o contrato atual, consulte
+> [`backend/README.md`](../backend/README.md), [`backend/docs/composicao.md`](../backend/docs/composicao.md),
+> o OpenAPI em [`backend/examples/openapi.json`](../backend/examples/openapi.json)
+> e o [progresso do frontend](../paguemenos-FRONT-END/docs/FRONTEND_PROGRESS.md).
+
 Este documento é autossuficiente para implementar a interface do **MVP local**. A referência campo a campo e os exemplos HTTP estão em [API_CONTRACT.md](API_CONTRACT.md); a especificação exportada e verificada está em [openapi.json](openapi.json); a sequência de trabalho está em [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md). Os caminhos `backend/...` citados permitem auditoria, mas o frontend não precisa do código do backend para seguir o contrato descrito aqui.
 
 ## 1. Escopo confirmado e arquitetura do servidor
