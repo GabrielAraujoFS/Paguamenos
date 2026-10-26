@@ -1,5 +1,15 @@
 # Contrato da API — Creative Factory + Brand Guardian
 
+## Fotografias autorizadas de produtos (2026-10-26)
+
+GET `/products/{product_id}/image` retorna a fotografia PNG registrada do produto existente, com ETag SHA-256 e nosniff. Ausência retorna 404; inconsistência de arquivo/registro retorna 409. Não recebe caminho de arquivo. O contrato comercial de Product permanece igual. Piece acrescenta product_photo_version opcional na entrada de dados legados: legacy (padrão de leitura) ou photos-2026-10, persistida nas novas campanhas quando o pacote está disponível. Assets legados permanecem separados para preservar fingerprints/aprovações. Veja [associação, testes, Docker e roteiro](../../docs/fotografias-produtos.md).
+
+## Edição e upload como fundo (2026-10-26)
+
+Novas operações reais neste backend: POST `/pieces/{piece_id}/edit` (JSON PieceEdit) e POST `/pieces/{piece_id}/background` (corpo binário PNG/JPEG, query editor_id, rights_confirmed=true e expected_version). Ambas retornam Piece. O upload é selecionado para recomposição explícita; não é referência visual para IA. Campos comerciais/disclaimer não são editáveis. expected_version deve corresponder ao edit_version atual, inicialmente zero nas peças antigas; conflito ou render em andamento retorna 409. Conteúdo/arquivo inválido retorna 422; corpo acima de 5 MiB retorna 413.
+
+Piece acrescenta edit_version, edit_history, visual_history, visual_needs_recomposition e selected_background. O compositor aceita versão 3 e a origem uploaded. GET `/pieces/{piece_id}/image` aceita version_id opcional, somente de uma versão vinculada à peça. Arquivo histórico não representa aprovação atual. RenderRequest mantém o contrato anterior; force=true usa o fundo selecionado/existente. Veja [contratos completos, limites, multimodal e roteiro](../../docs/ferramentas-marketing.md). O Nginx permite 5m em /api/ para corresponder ao limite do upload.
+
 ## Personalização aditiva (2026-10-26)
 
 `Briefing` aceita `theme` (opcional/nulo, 1–120 caracteres), `visual_style` (opcional/nulo: Minimalista, Moderno, Acolhedor, Vibrante, Elegante) e `show_price` (booleano, false nas novas campanhas). `Piece` expõe essas preferências e `composition_version` (1 legado, 2 novo). Campanhas persistidas sem preferência mantêm show_price=true e layout antigo. Catálogo e campos comerciais internos continuam completos. Não há novo endpoint nem migração. Os três snapshots OpenAPI foram exportados da aplicação FastAPI atual. Consulte [comportamento e roteiro manual](../../docs/personalizacao-campanhas.md).

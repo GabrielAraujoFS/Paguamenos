@@ -1,11 +1,13 @@
 import { ArrowUpRight } from "lucide-react"
 import { Link } from "react-router"
 import type { Product } from "@/contracts/api"
+import { ProductPhoto } from "@/features/catalog/ProductPhoto"
 import { formatPrice } from "@/features/catalog/format-price"
 
 export function ProductCard({ product }: { product: Product }) {
   return (
     <article className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <ProductPhoto key={product.id} product={product} />
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">{product.category}</p>

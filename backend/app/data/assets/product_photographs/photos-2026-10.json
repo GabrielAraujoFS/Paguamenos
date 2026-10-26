@@ -1,0 +1,29 @@
+{
+  "version": "photos-2026-10",
+  "products": {
+    "syn-001": {
+      "filename": "sabonete_brisa.png",
+      "sha256": "54b476e3c5455c5e07f87d6be30e4a4d061b8057627316d6542754551b0f3461"
+    },
+    "syn-002": {
+      "filename": "shampoo_aurora.png",
+      "sha256": "2fcd514784b25c5485d583e3e21e985c362e15cc3b8511ea8fd47db3a205e20b"
+    },
+    "syn-003": {
+      "filename": "hidratante_nuvem.png",
+      "sha256": "607ef19db57b953fb025575e49e71cae9fb48ceec6ac3b95c8932e817441122c"
+    },
+    "syn-004": {
+      "filename": "escova_sorriso.png",
+      "sha256": "2e3122134afec7ae217d93d03ccd81c0dc93119ca95c45c08b479110f9295308"
+    },
+    "syn-005": {
+      "filename": "algodao_sereno.png",
+      "sha256": "2fe57515b651e8c4077acc046563d14b65258f61dd4363b00caeaf3f41fc8293"
+    },
+    "syn-006": {
+      "filename": "protetor_solar_solara.png",
+      "sha256": "906453e9c2fdb085183ddec26d751e7bf893ecc9936b85d5258bb3e34d6aa484"
+    }
+  }
+}

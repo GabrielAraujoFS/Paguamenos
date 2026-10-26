@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react"
 import { Link, useParams } from "react-router"
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/RequestState"
 import { normalizeHttpError } from "@/api/errors"
+import { ProductPhoto } from "@/features/catalog/ProductPhoto"
 import { formatPrice } from "@/features/catalog/format-price"
 import { useProduct } from "@/features/catalog/use-products"
 
@@ -19,6 +20,7 @@ export function ProductDetailPage() {
         <ErrorState error={product.error} onRetry={() => void product.refetch()} />
       ) : (
         <article className="max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-9">
+          <ProductPhoto key={product.data.id} product={product.data} />
           <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">{product.data.category}</p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-blue-950">{product.data.name}</h1>
           <p className="mt-5 leading-relaxed text-slate-700">{product.data.description}</p>

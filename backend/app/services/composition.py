@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
+import json
 from io import BytesIO
 from pathlib import Path
 import re
@@ -68,6 +69,49 @@ class PillowComposer:
             raise CompositionError(code, f"Asset obrigatório ausente ou fora da pasta autorizada: {directory}/{name}.")
         return target
 
+    def _photo_registry(self):
+        path = self.assets_root / 'product_photographs' / 'photos-2026-10.json'
+        if not path.is_file():
+            return {}
+        try:
+            registry = json.loads(path.read_text(encoding='utf-8'))
+            if registry['version'] != 'photos-2026-10' or not isinstance(registry['products'], dict):
+                raise ValueError('Invalid registry')
+            return registry['products']
+        except (OSError, ValueError, KeyError, TypeError):
+            raise CompositionError('PRODUCT_ASSET_INVALID', 'Registro de fotografias autorizadas inválido.') from None
+
+    def product_photo_version(self, product_id):
+        try:
+            registry = self._photo_registry()
+        except CompositionError:
+            # Keep text generation available; the visual preflight reports the broken registry.
+            return 'photos-2026-10'
+        return 'photos-2026-10' if product_id in registry else 'legacy'
+
+    def product_asset_name(self, product_id, version='legacy'):
+        if not re.fullmatch(r'[A-Za-z0-9_-]+', product_id):
+            raise CompositionError('PRODUCT_ASSET_MISSING', 'Identificador de produto inválido.')
+        if version == 'legacy':
+            return f'{product_id}.png'
+        entry = self._photo_registry().get(product_id)
+        if version != 'photos-2026-10' or not isinstance(entry, dict) or not isinstance(entry.get('filename'), str):
+            raise CompositionError('PRODUCT_ASSET_MISSING', 'Fotografia autorizada não registrada para este produto e versão.')
+        # _asset enforces containment, including registry-controlled file names.
+        return entry['filename']
+
+    def product_asset_hash(self, product_id, version='legacy'):
+        name = self.product_asset_name(product_id, version)
+        path = self._asset('product_photographs', name, 'PRODUCT_ASSET_MISSING')
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if version != 'legacy' and digest != self._photo_registry()[product_id].get('sha256'):
+            raise CompositionError('PRODUCT_ASSET_INVALID', 'SHA-256 da fotografia difere do registro autorizado.')
+        return digest
+
+    def load_product_photo(self, product_id, version='legacy'):
+        self.product_asset_hash(product_id, version)
+        return self._load_png_asset('product_photographs', self.product_asset_name(product_id, version), 'PRODUCT_ASSET_MISSING')
+
     @staticmethod
     def _open_image(data: bytes, code: str) -> Image.Image:
         try:
@@ -84,11 +128,11 @@ class PillowComposer:
             raise CompositionError(code, "O asset obrigatório precisa ser PNG.")
         return data, image
 
-    def check_assets(self, product_id: str) -> None:
+    def check_assets(self, product_id: str, version: str = 'legacy') -> None:
         """Fail before any paid call when an authorized composition asset is missing."""
         if not re.fullmatch(r"[A-Za-z0-9_-]+", product_id):
             raise CompositionError("PRODUCT_ASSET_MISSING", "ID do produto inválido para asset.")
-        self._load_png_asset("product_photographs", f"{product_id}.png", "PRODUCT_ASSET_MISSING")
+        self.load_product_photo(product_id, version)
         self._load_png_asset("logos", self.logo_name, "LOGO_MISSING")
         font = self._asset("fonts", self.font_name, "FONT_MISSING")
         try:
@@ -179,6 +223,8 @@ class PillowComposer:
             footer -= gap
         inset = int(width * (.035 if template.name == 'produto_direita' else .05))
         boxes['product'] = Box(left + inset, cursor, width - 2 * inset, footer - cursor)
+        if content.get('composition_version') == 3 and template.name == 'produto_direita':
+            boxes['product'] = Box(left + int(width * .25), cursor, width - int(width * .25), footer - cursor)
         for box in boxes.values():
             PillowComposer._check_box(box, template, margins)
         PillowComposer._check_collisions(boxes)
@@ -238,7 +284,7 @@ class PillowComposer:
             bg = self._open_image(self.storage.get(background).data, "BACKGROUND_MISSING")
         except (FileNotFoundError, ValueError):
             raise CompositionError("BACKGROUND_MISSING", "Fundo não encontrado ou inválido.") from None
-        product_data, product = self._load_png_asset("product_photographs", f"{piece.product_id}.png", "PRODUCT_ASSET_MISSING")
+        product_data, product = self.load_product_photo(piece.product_id, piece.product_photo_version)
         logo_data, logo = self._load_png_asset("logos", self.logo_name, "LOGO_MISSING")
         font_path = self._asset("fonts", self.font_name, "FONT_MISSING")
         try:
@@ -247,10 +293,11 @@ class PillowComposer:
             raise CompositionError("FONT_INVALID", "Fonte obrigatória inválida.") from None
         canvas = ImageOps.fit(bg, (template.width, template.height), method=Image.Resampling.LANCZOS, centering=(.5, .5))
         draw = ImageDraw.Draw(canvas, "RGBA")
-        modern = piece.composition_version == 2
+        modern = piece.composition_version >= 2
         style = piece.visual_style or 'Minimalista'
         radius = {'Minimalista': 12, 'Moderno': 20, 'Acolhedor': 36, 'Vibrante': 28, 'Elegante': 4}[style]
-        if modern:
+        photographic = piece.product_photo_version != 'legacy'
+        if modern and not photographic:
             area = boxes['product']
             # Geometric accents use only the existing authorized ink/panel palette.
             if style in ('Acolhedor', 'Vibrante') or piece.theme in ('Verão', 'Autocuidado', 'Beleza'):
@@ -265,7 +312,19 @@ class PillowComposer:
             box = boxes[name]
             draw.rounded_rectangle((box.x, box.y, box.x + box.width, box.y + box.height),
                                    radius=radius if modern else 12, fill=(36, 92, 114, 255) if modern and name == "cta" else (255, 255, 255, 224))
-        self._paste_contained(canvas, product, boxes["product"])
+        if photographic:
+            # Preserve the whole photograph, including its own scene/background.
+            area = boxes['product']
+            if area.width <= 24 or area.height <= 24:
+                raise CompositionError('LAYOUT_OUT_OF_BOUNDS', 'Área insuficiente para o cartão fotográfico.')
+            scale = min((area.width - 24) / product.width, (area.height - 24) / product.height)
+            width, height = max(1, int(product.width * scale)), max(1, int(product.height * scale))
+            photo_box = Box(area.x + (area.width - width) // 2, area.y + (area.height - height) // 2, width, height)
+            draw.rounded_rectangle((photo_box.x - 10, photo_box.y - 10, photo_box.x + width + 10, photo_box.y + height + 10),
+                                   radius=12, fill=(255, 255, 255, 255), outline=(36, 92, 114, 255), width=2)
+            self._paste_contained(canvas, product, Box(area.x + 12, area.y + 12, area.width - 24, area.height - 24))
+        else:
+            self._paste_contained(canvas, product, boxes["product"])
         self._paste_contained(canvas, logo, boxes["logo"])
         for name, value in texts.items():
             box = boxes[name]
@@ -279,7 +338,7 @@ class PillowComposer:
         output = BytesIO()
         canvas.save(output, format="PNG", optimize=True)
         product_ref = self.storage.save(product_data, "image/png", kind="product_asset",
-                                        metadata={"product_id": piece.product_id}, width=product.width, height=product.height)
+                                        metadata={"product_id": piece.product_id, "photo_version": piece.product_photo_version}, width=product.width, height=product.height)
         created_at = datetime.now(timezone.utc).isoformat()
         return self.storage.save(output.getvalue(), "image/png", kind="final",
             metadata={"background": background.model_dump(mode="json"),
@@ -294,6 +353,9 @@ class PillowComposer:
                           "texts_sent_to_renderer": texts,
                           "product_id": piece.product_id,
                           "product_sha256": hashlib.sha256(product_data).hexdigest(),
+                          "product_photo_version": piece.product_photo_version,
+                          "product_asset_name": self.product_asset_name(piece.product_id, piece.product_photo_version),
+                          "product_presentation": 'photo_card' if photographic else 'contained',
                           "logo_name": self.logo_name,
                           "logo_sha256": hashlib.sha256(logo_data).hexdigest(),
                           "font_name": self.font_name,

@@ -140,6 +140,7 @@ def generate(briefing: Briefing, request: Request, db: Session = Depends(generat
         content.update(product_id=product.id, product_name=product.name, price=str(product.price),
             theme=briefing.theme, visual_style=briefing.visual_style, show_price=briefing.show_price,
             composition_version=2,
+            product_photo_version=getattr(request.app.state.composer, 'product_photo_version', lambda product_id: 'legacy')(product.id),
             authorized_offer=product.authorized_offer, disclaimer=rules['generation']['disclaimer'],
             text_generation=metadata.model_dump(mode='json'),
             visual=visual.model_dump(mode="json"))

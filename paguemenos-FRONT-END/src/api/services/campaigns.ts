@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client"
-import type { Campaign, CampaignListParams, CampaignPage, GenerateRequest, Piece, RenderRequest, RenderStatus, ReviewRequest } from "@/contracts/api"
+import type { Campaign, CampaignListParams, CampaignPage, GenerateRequest, Piece, PieceEditRequest, RenderRequest, RenderStatus, ReviewRequest } from "@/contracts/api"
 
 function isCampaignPage(value: unknown): value is CampaignPage {
   if (typeof value !== "object" || value === null) return false
@@ -65,9 +65,21 @@ export async function getRender(pieceId: string): Promise<RenderStatus> {
   return data
 }
 
-export async function getPieceImage(pieceId: string): Promise<Blob> {
+export async function getPieceImage(pieceId: string, versionId?: string): Promise<Blob> {
   const { data } = await apiClient.get<Blob>(`/pieces/${encodeURIComponent(pieceId)}/image`, {
-    responseType: "blob", headers: { Accept: "image/png" },
+    ...(versionId ? { params: { version_id: versionId } } : {}), responseType: "blob", headers: { Accept: "image/png" },
   })
   return data
+}
+
+
+export async function editPiece(pieceId: string, request: PieceEditRequest): Promise<Piece> {
+  return (await apiClient.post<Piece>(`/pieces/${encodeURIComponent(pieceId)}/edit`, request)).data
+}
+
+export async function uploadPieceBackground(pieceId: string, file: File, editorId: string, expectedVersion: number): Promise<Piece> {
+  return (await apiClient.post<Piece>(`/pieces/${encodeURIComponent(pieceId)}/background`, file, {
+    params: { editor_id: editorId, expected_version: expectedVersion, rights_confirmed: true },
+    headers: { "Content-Type": file.type },
+  })).data
 }

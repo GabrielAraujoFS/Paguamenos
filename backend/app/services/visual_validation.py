@@ -35,6 +35,13 @@ def _asset_hash(composer: PillowComposer, directory: str, name: str) -> str:
         return 'missing'
 
 
+def _product_hash(composer, content):
+    try:
+        return composer.product_asset_hash(str(content.get('product_id') or ''), content.get('product_photo_version', 'legacy'))
+    except (CompositionError, OSError, ValueError):
+        return 'missing'
+
+
 def _stored_hashes(storage, raw_reference) -> tuple[str, str]:
     try:
         reference = ImageReference.model_validate(raw_reference)
@@ -54,7 +61,6 @@ def visual_fingerprint_evidence(content: dict, storage, composer) -> dict:
     image_hash, sidecar_hash = _stored_hashes(storage, visual.get('final_image'))
     product_image_hash, product_sidecar_hash = _stored_hashes(storage, visual.get('product_image'))
     background_hash, background_sidecar_hash = _stored_hashes(storage, visual.get('background'))
-    product_id = str(content.get('product_id') or '')
     return {
         'final_image_bytes': image_hash,
         'final_image_sidecar': sidecar_hash,
@@ -62,7 +68,7 @@ def visual_fingerprint_evidence(content: dict, storage, composer) -> dict:
         'product_image_sidecar': product_sidecar_hash,
         'background_bytes': background_hash,
         'background_sidecar': background_sidecar_hash,
-        'product_asset': _asset_hash(composer, 'product_photographs', f'{product_id}.png'),
+        'product_asset': _product_hash(composer, content),
         'logo_asset': _asset_hash(composer, 'logos', composer.logo_name),
         'font_asset': _asset_hash(composer, 'fonts', composer.font_name),
     }
@@ -70,10 +76,14 @@ def visual_fingerprint_evidence(content: dict, storage, composer) -> dict:
 
 def validate_visual(content: dict, storage, composer, rules) -> list[ValidationResult]:
     visual = content.get('visual') or {}
+    pending = content.get('visual_needs_recomposition', False)
+    pending_result = _result('VISUAL_RECOMPOSITION_REQUIRED', 'visual.final_image', False, 'Conteúdo ou fundo alterado: recomponha a peça antes de validar e aprovar.')
     if not isinstance(visual, dict) or visual.get('state') != 'composed':
+        if pending:
+            return [pending_result]
         # Old campaigns and text-only drafts retain their existing validation behavior.
         return []
-    results = []
+    results = [pending_result] if pending else []
     def check(code, field, passed, message, severity=Severity.CRITICAL):
         results.append(_result(code, field, bool(passed), message, severity))
 
@@ -112,6 +122,14 @@ def validate_visual(content: dict, storage, composer, rules) -> list[ValidationR
         background_ok = background_stored.metadata.get('kind') == 'background'
     except (ValidationError, TypeError, ValueError, OSError, KeyError):
         background_ok = False
+    upload = background_stored.metadata.get('metadata') if background_ok else None
+    upload = upload if isinstance(upload, dict) else {}
+    if background_ok and (upload.get('source') == 'uploaded' or visual.get('composition_source') == 'uploaded'):
+        check('VISUAL_UPLOADED_BACKGROUND', 'visual.background',
+              visual.get('composition_source') == 'uploaded' and upload.get('source') == 'uploaded' and upload.get('rights_confirmed') is True
+              and bool(str(upload.get('uploader_id') or '').strip())
+              and isinstance(upload.get('original_sha256'), str) and len(upload['original_sha256']) == 64,
+              'Fundo enviado deve manter origem, autorização declarada, identificação e hash original.')
     check('VISUAL_BACKGROUND_ASSET', 'visual.background', background_ok,
           'Fundo persistido deve existir, corresponder ao SHA-256 e ser identificado como fundo.')
 
@@ -161,7 +179,7 @@ def validate_visual(content: dict, storage, composer, rules) -> list[ValidationR
           'Áreas obrigatórias registradas não podem se sobrepor.')
 
     expected_texts = published_texts(content)
-    if content.get('composition_version', 1) == 2:
+    if content.get('composition_version', 1) in (2, 3):
         check('VISUAL_PUBLICATION_PREFERENCES', 'visual.final_image',
               all(composition.get(key) == content.get(key) for key in
                   ('composition_version', 'show_price', 'theme', 'visual_style')),
@@ -171,19 +189,34 @@ def validate_visual(content: dict, storage, composer, rules) -> list[ValidationR
           and composition.get('product_id') == content.get('product_id'),
           'Textos e produto enviados ao compositor devem coincidir com os dados autorizados; isto não é OCR.')
 
-    product_hash = _asset_hash(composer, 'product_photographs', f"{content.get('product_id')}.png")
+    product_hash = _product_hash(composer, content)
     logo_hash = _asset_hash(composer, 'logos', composer.logo_name)
     font_hash = _asset_hash(composer, 'fonts', composer.font_name)
     product_ref_ok = False
+    product_metadata = {}
     try:
         product_ref = ImageReference.model_validate(visual.get('product_image'))
         product_stored = storage.get(product_ref)
+        raw_metadata = product_stored.metadata.get('metadata')
+        product_metadata = raw_metadata if isinstance(raw_metadata, dict) else {}
         product_ref_ok = product_stored.metadata.get('kind') == 'product_asset' and product_ref.sha256 == product_hash
     except (ValidationError, TypeError, ValueError, OSError, KeyError):
         pass
     check('VISUAL_PRODUCT_ASSET', 'visual.product_image', product_hash != 'missing' and product_ref_ok
           and composition.get('product_sha256') == product_hash,
           'Fotografia e referência de produto devem corresponder ao asset autorizado atual.')
+    if content.get('product_photo_version', 'legacy') != 'legacy':
+        try:
+            name = composer.product_asset_name(content.get('product_id'), content['product_photo_version'])
+            photo_metadata_ok = (composition.get('product_asset_name') == name
+                and composition.get('product_photo_version') == content['product_photo_version']
+                and composition.get('product_presentation') == 'photo_card'
+                and product_metadata.get('product_id') == content.get('product_id')
+                and product_metadata.get('photo_version') == content['product_photo_version'])
+        except (CompositionError, TypeError, ValueError, KeyError):
+            photo_metadata_ok = False
+        check('VISUAL_PRODUCT_PHOTO_VERSION', 'visual.product_image', product_ref_ok and photo_metadata_ok,
+              'Fotografia, produto, versão autorizada e apresentação devem corresponder ao registro e aos metadados.')
     check('VISUAL_LOGO_ASSET', 'visual.final_image', logo_hash != 'missing'
           and composition.get('logo_name') == composer.logo_name
           and composition.get('logo_sha256') == logo_hash,

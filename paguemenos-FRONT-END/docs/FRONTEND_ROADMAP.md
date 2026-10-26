@@ -1,5 +1,7 @@
 # Roadmap do frontend
 
+Atualização 26/10/2026: editor restrito de peças, painel Guardian recolhível, upload como fundo e histórico de artes foram implementados no backend/frontend deste workspace. As referências anteriores a ausência de edição/mídia são históricas; veja [contrato atual](API_CONTRACT.md). Editor livre, interpretação multimodal, autenticação e publicação continuam fora do escopo.
+
 Estado: etapas 0 a 4, mais listagem de campanhas, implementadas; a verificação visual no navegador com backend ativo continua pendente. Os serviços de detalhe, validação e revisão foram exercitados contra FastAPI temporário com SQLite descartável e provedor mock. Referências: [FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md), [API_CONTRACT.md](API_CONTRACT.md) e [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md).
 
 | Etapa | Prioridade | Entrega planejada | Critério de conclusão |

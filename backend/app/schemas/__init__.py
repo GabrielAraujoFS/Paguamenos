@@ -123,7 +123,7 @@ class BackgroundGenerationMetadata(InputModel):
     cost_basis: str | None = None
 
 class VisualMetadata(InputModel):
-    composition_source: Literal['ai', 'local_assets', 'local_test'] | None = None
+    composition_source: Literal['ai', 'local_assets', 'local_test', 'uploaded'] | None = None
     fallback_reason: str | None = None
     retry_after_seconds: int | None = Field(default=None, ge=0)
     state: VisualProcessingState = VisualProcessingState.PENDING
@@ -177,11 +177,35 @@ class ReviewRecord(ReviewDecision):
     created_at: datetime
     fingerprint: str
 
+class PieceEdit(InputModel):
+    expected_version: int = Field(ge=0)
+    editor_id: Annotated[str, Field(min_length=1, max_length=100)]
+    title: Text
+    subtitle: Text
+    cta: Text
+    template: Literal['produto_centro', 'produto_direita'] | None = None
+    visual_style: VisualStyle | None = None
+    show_price: bool
+
+class EditRecord(BaseModel):
+    id: str
+    created_at: datetime
+    editor_id: str
+    kind: Literal['content', 'background']
+    before: dict
+    after: dict
+
 class Piece(BaseModel):
+    product_photo_version: Literal['legacy', 'photos-2026-10'] = 'legacy'
+    edit_version: int = 0
+    edit_history: list[EditRecord] = Field(default_factory=list)
+    visual_history: list[VisualMetadata] = Field(default_factory=list)
+    visual_needs_recomposition: bool = False
+    selected_background: ImageReference | None = None
     theme: str | None = None
     visual_style: VisualStyle | None = None
     show_price: bool = True
-    composition_version: Literal[1, 2] = 1
+    composition_version: Literal[1, 2, 3] = 1
     id: str
     campaign_id: str
     channel: Channel

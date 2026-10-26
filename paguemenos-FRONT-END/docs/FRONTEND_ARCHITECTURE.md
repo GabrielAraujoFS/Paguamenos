@@ -102,3 +102,17 @@ Não faltam os arquivos documentais essenciais para **planejar o MVP**: contrato
 ## Personalização de briefing (2026-10-26)
 
 Tema personalizado é estado de formulário; `toGenerateRequest` envia somente o tema resolvido ao backend. Estilo e preço são campos independentes, preservados no mesmo formulário durante erro/fallback. Não se altera o objeto produto nem se oculta preço de catálogo: o detalhe distingue dados internos de publicação. A preferência persistida e a projeção de publicação/composição pertencem ao servidor. Não há novo endpoint ou estado de aprovação local. Compatibilidade dos PNGs antigos usa versão do compositor, sem recriação automática. Ver [contrato e limitações](../../docs/personalizacao-campanhas.md).
+
+
+## Ferramentas de marketing (2026-10-26)
+
+ValidationResults reutiliza os resultados reais em um resumo e details/summary nativo por categorias. PieceEditor mantém rascunho local até salvar, usa os serviços centralizados editPiece/uploadPieceBackground e atualiza o cache com a Piece real. A versão carregada impede sobrescrita concorrente. Salvar/upload não inicia composição; PieceVisual reutiliza render force=true e mostra origem do fundo e a necessidade de recompor. Histórico tem consulta antes/depois em linguagem de produto e versões antigas do PNG são carregadas sob demanda, por referências vinculadas à peça. Nenhum estado de aprovação é calculado localmente para substituir o backend.
+
+Os novos endpoints, metadados e limites estão nos snapshots OpenAPI e no [relatório](../../docs/ferramentas-marketing.md). O editor não altera instruções globais da campanha, fotos oficiais, preços/ofertas de catálogo nem regras. Upload só fornece fundo; não há interpretação multimodal. Formulário usa React Hook Form/Zod e mutações sem retry automático. Alterações/versões são persistidas pelo backend no JSON existente, sem migração.
+
+
+## Fotografias do catálogo (2026-10-26)
+
+ProductPhoto é compartilhado por ProductCard e ProductDetailPage. Seu endereço é resolvido por apiClient.getUri, usando a mesma base de API dos demais serviços: local absoluto ou /api no Docker. Não há mapa duplicado de arquivos no frontend nem cópia de fotos no bundle. O servidor resolve produto/versão no registro de assets; o quadro 4:3 com object-contain preserva fotos horizontais e um placeholder acessível substitui erros de carregamento. Dados comerciais e navegação permanecem.
+
+Pillow e Brand Guardian usam o mesmo registro de fotografias versionadas e os hashes fixados. Assets antigos não são substituídos; Piece sem versão permanece legacy. O [relatório](../../docs/fotografias-produtos.md) descreve o risco de invalidar aprovações e a proteção adotada.

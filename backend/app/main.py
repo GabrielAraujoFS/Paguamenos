@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.api import campaigns, images, products, reviews, render
+from app.api import campaigns, images, products, reviews, render, editing
 from app.database import Base, make_engine, make_session_factory
 from app.schemas import ErrorResponse
 from app.schemas.configuration import parse_rules
@@ -100,7 +100,7 @@ def create_app(database_url=None, generator=None, catalog=None, rules_loader=Non
                     'gemini' if isinstance(application.state.generator, GeminiGenerationService) else 'custom')
         return {"status": "ok", "generation_provider": provider}
 
-    for router in (products.router, campaigns.router, reviews.router, render.router, images.router):
+    for router in (products.router, campaigns.router, reviews.router, render.router, images.router, editing.router):
         application.include_router(router)
     return application
 

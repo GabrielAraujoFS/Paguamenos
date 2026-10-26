@@ -131,3 +131,33 @@ O backend local em `http://127.0.0.1:8000/openapi.json` expõe `GET /campaigns`,
 - TypeScript `tsc -b --pretty false`, lint `eslint .` e build `vite build`: **passaram**. `git diff --check` sem erros de whitespace.
 - PNGs feed/story com assets locais foram inspecionados visualmente. Teste manual completo da interface no navegador e avaliação real da criatividade do Gemini permanecem pendentes; não foram afirmados como realizados.
 - [Relatório, arquivos alterados, limitações e roteiro manual](../../docs/personalizacao-campanhas.md). Branch encontrada `feature/personalizacao-campanhas`, mantida. Sem staging/commit/merge/push; arquivo não rastreado indicado pelo usuário preservado.
+
+## Ferramentas de marketing — 26/10/2026
+
+- Brand Guardian com resumo de conformidade, contagem de falhas críticas e details/summary acessível, recolhido inicialmente, agrupando todas as verificações sem alterar resultados. Aviso para validação antiga/desatualizada.
+- PieceEditor permite título/subtítulo/CTA, estilo, template e preço visível, mantendo catálogo/oferta/disclaimer protegidos no servidor. Identificação e versão impedem sobrescrita silenciosa; salvar não compõe nem aprova. Histórico mostra antes/depois e imagens anteriores permanecem consultáveis/baixáveis.
+- Upload de PNG/JPEG como fundo no editor, por consentimento explícito: até 5 MiB, limites de dimensões/pixels, verificação de conteúdo, orientação EXIF e normalização sem metadados. Referências opacas, SHA-256 e origem uploaded são persistidos; nenhuma imagem é enviada à IA.
+- Serviços reais adicionados: POST /pieces/{id}/edit e POST /pieces/{id}/background; GET /pieces/{id}/image aceita version_id vinculado à peça. Render/validate/review existentes reutilizados. Snapshots OpenAPI exportados do app atual, sem migração. Nginx /api/ recebe limite 5m; Dockerfile/Compose não foram alterados.
+- Frontend completo: **39 testes passaram e 1 HTTP opt-in foi ignorado**. TypeScript, lint e build de produção **passaram**. O teste de details foi corrigido para a semântica do atributo open no jsdom; o lint identificou um callback de formulário ajustado antes da execução final.
+- Backend: suíte completa final **284 passaram**; execução específica do arquivo novo com **31 passando**. Provedores mock/disabled, chaves sintéticas e bancos/assets temporários; nenhum crédito de API consumido. A execução completa final é registrada no relatório.
+- [Arquivos, contratos, decisões, proposta multimodal, limitações e roteiro manual](../../docs/ferramentas-marketing.md). Interpretação multimodal, instruções criativas por peça e editor livre não foram simulados. Teste manual completo de navegador e rebuild/runtime do proxy Docker permanecem pendentes.
+- Sem staging, commit, merge, push, alteração de .env/credenciais ou exclusão de bancos, imagens e volumes. Arquivo não rastreado indicado pelo usuário preservado.
+
+
+## Fotografias dos cinco produtos — 26/10/2026
+
+- Os cinco PNGs fornecidos foram abertos/verificados e associados aos IDs reais syn-001 a syn-005. Cópias byte a byte e registro versionado ficam no backend; catálogo comercial e assets antigos permanecem intactos.
+- Cartões e detalhe usam ProductPhoto compartilhado, foto acima das informações, object-contain, dimensões consistentes, alt acessível, lazy loading e placeholder. URL resolvida pelo cliente existente; GET /products/{id}/image serve PNG e ETag, validando o hash.
+- Novas campanhas registram photos-2026-10; peças antigas sem campo ficam legacy. O compositor usa cartão fotográfico e preserva a cena integral. Guardian mantém checks anteriores e confere associação/versão/hash/metadados. Teste confirma fingerprint, aprovação e PNG antigos inalterados após instalação das fotos.
+- Backend completo: **316 passaram**; casos específicos **32 passaram**, também **32 passaram em container Linux sem rede**. Frontend completo: **47 passaram, 1 HTTP opt-in ignorado**. TypeScript, lint e build **passaram**. Nenhuma API real de IA foi chamada.
+- Imagens Docker backend/frontend de verificação construídas. Projeto temporário sem volumes validou Nginx, cinco PNGs/hashes via proxy e fluxo mock → falha visual por provider desabilitado → confirmação local → composição → Guardian → revisão de teste → exportação PNG. Não substituiu os containers da instalação real.
+- Catálogo conferido no navegador desktop com as cinco fotos; feed sem preço e story com preço inspecionados visualmente. A primeira comparação de preço no teste foi ajustada por diferença de espaço não separável do Intl; o formatador existente não foi alterado.
+- [Arquivos, associação, mecanismo de compatibilidade, reconstrução Docker, limitações e roteiro manual](../../docs/fotografias-produtos.md). Conferência de responsividade em janela estreita permanece no roteiro manual.
+- Alterações anteriores de marketing preservadas; sem staging/commit/merge/push, alteração de .env/credenciais/IA/regras comerciais, exclusão de dados persistentes ou inclusão do arquivo não rastreado indicado pelo usuário.
+
+
+## 2026-10-26 — Protetor Solar Solara
+
+Catálogo compartilhado ampliado para seis produtos com syn-006, sem alterar componentes ou contratos. A fotografia usa o endpoint e componente existentes. Testes de cartão e seleção no briefing incluem Solara; frontend: 49 aprovados, 1 ignorado. TypeScript, lint e build passaram. Ver detalhes, limitações da fotografia e roteiro manual em ../../docs/protetor-solar-solara.md. Nenhuma chamada real de IA foi feita.
+
+Verificação complementar Solara: proxy Docker /api e duas campanhas com preço oculto/exibido passaram por composição local explícita, Guardian, aprovação humana e download PNG. Suíte backend: 321 aprovados; rodada específica posterior: 38 aprovados (totais sobrepostos). Serviços reais e volumes preservados.

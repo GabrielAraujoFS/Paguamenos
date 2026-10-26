@@ -352,5 +352,6 @@ def test_openapi_snapshot_and_existing_response_contracts(environment):
         'id', 'campaign_id', 'channel', 'title', 'subtitle', 'cta', 'disclaimer',
         'product_id', 'product_name', 'price', 'authorized_offer', 'state', 'validations', 'reviews',
         'theme', 'visual_style', 'show_price', 'composition_version',
+        'product_photo_version', 'edit_version', 'edit_history', 'visual_history', 'visual_needs_recomposition', 'selected_background',
     }
     assert [p['channel'] for p in campaign['pieces']] == BRIEFING['channels']

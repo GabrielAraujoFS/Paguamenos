@@ -60,11 +60,37 @@ export interface ReviewRecord {
   comment: string | null
 }
 
+export interface PieceEditRequest {
+  expected_version: number
+  editor_id: string
+  title: string
+  subtitle: string
+  cta: string
+  template?: "produto_centro" | "produto_direita"
+  visual_style: VisualStyle | null
+  show_price: boolean
+}
+
+export interface EditRecord {
+  id: string
+  created_at: string
+  editor_id: string
+  kind: "content" | "background"
+  before: Record<string, unknown>
+  after: Record<string, unknown>
+}
+
 export interface Piece {
+  product_photo_version?: "legacy" | "photos-2026-10"
+  edit_version?: number
+  edit_history?: EditRecord[]
+  visual_history?: VisualMetadata[]
+  visual_needs_recomposition?: boolean
+  selected_background?: ImageReference | null
   theme?: string | null
   visual_style?: VisualStyle | null
   show_price?: boolean
-  composition_version?: 1 | 2
+  composition_version?: 1 | 2 | 3
   id: string
   campaign_id: string
   channel: Channel
@@ -163,7 +189,7 @@ export interface BackgroundGenerationMetadata {
 }
 
 export interface VisualMetadata {
-  composition_source?: "ai" | "local_assets" | "local_test" | null
+  composition_source?: "ai" | "local_assets" | "local_test" | "uploaded" | null
   fallback_reason?: string | null
   retry_after_seconds?: number | null
   state: VisualProcessingState

@@ -4,11 +4,11 @@ import { getPieceImage } from "@/api/services/campaigns"
 import { queryKeys } from "@/api/query-keys"
 import { normalizeHttpError } from "@/api/errors"
 
-export function PiecePreview({ pieceId, fileId, title }: { pieceId: string; fileId: string; title: string }) {
+export function PiecePreview({ pieceId, fileId, title, historical = false }: { pieceId: string; fileId: string; title: string; historical?: boolean }) {
   const [expanded, setExpanded] = useState(false)
   const image = useQuery({
-    queryKey: queryKeys.pieceImage(pieceId, fileId),
-    queryFn: async () => URL.createObjectURL(await getPieceImage(pieceId)),
+    queryKey: [...queryKeys.pieceImage(pieceId, fileId), historical ? "historical" : "current"],
+    queryFn: async () => URL.createObjectURL(await getPieceImage(pieceId, ...(historical ? [fileId] as const : []))),
     retry: false, staleTime: Infinity, gcTime: 0,
   })
 
@@ -34,6 +34,7 @@ export function PiecePreview({ pieceId, fileId, title }: { pieceId: string; file
 
   return <div className="space-y-3">
     <img src={url} alt={`Prévia de ${title}`} className="max-h-[560px] w-full rounded-lg border border-slate-200 object-contain" />
+    {historical && <p className="text-sm font-semibold text-amber-900">Versão anterior para consulta. Não representa a aprovação da peça atual.</p>}
     <p className="text-xs text-slate-600">Prévia interna. O arquivo só deve ser usado para publicação após aprovação humana.</p>
     <div className="flex flex-wrap gap-3">
       <button type="button" onClick={() => setExpanded(true)} className="rounded-lg border px-3 py-2 text-sm">Ver em tamanho maior</button>

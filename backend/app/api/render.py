@@ -69,13 +69,16 @@ def start_render(piece_id: str, body: RenderRequest, request: Request,
                 result = _status(piece)
                 db.commit()
                 return result
-            if visual.state == VisualProcessingState.COMPOSED and not (body.force or body.regenerate_background or body.source_piece_id or body.use_local_assets):
+            if visual.state == VisualProcessingState.COMPOSED and not (body.force or body.regenerate_background or body.source_piece_id or body.use_local_assets or piece.content.get('visual_needs_recomposition')):
                 response.status_code = 200
                 result = _status(piece)
                 db.commit()
                 return result
             try:
-                app.state.composer.check_assets(piece.content['product_id'])
+                if piece.content.get('product_photo_version', 'legacy') == 'legacy':
+                    app.state.composer.check_assets(piece.content['product_id'])
+                else:
+                    app.state.composer.check_assets(piece.content['product_id'], version=piece.content['product_photo_version'])
                 default_template(visual.plan.layout, visual.plan.channel)
                 if body.source_piece_id:
                     source = db.get(PieceModel, body.source_piece_id)
@@ -88,7 +91,10 @@ def start_render(piece_id: str, body: RenderRequest, request: Request,
                 elif body.use_local_assets:
                     background = None
                 else:
-                    background = None if body.regenerate_background else _background_from_piece(app, piece, visual)
+                    if not body.regenerate_background and piece.content.get('selected_background'):
+                        background = _background_from_piece(app, piece, VisualMetadata(background=piece.content['selected_background']))
+                    else:
+                        background = None if body.regenerate_background else _background_from_piece(app, piece, visual)
                 if background is None and app.state.background_generator is None and not body.use_local_assets:
                     raise CompositionError('IMAGE_PROVIDER_UNCONFIGURED', 'Configure o provedor de fundos ou reutilize um fundo existente.')
             except CompositionError as exc:
@@ -173,7 +179,10 @@ def run_visual_render(app, piece_id: str, request_id: str) -> None:
         current_visual = VisualMetadata.model_validate(snapshot.content['visual'])
         stored_source = app.state.image_storage.get(background).metadata.get('metadata', {}).get('source')
         current_visual.composition_source = ('local_assets' if stored_source == 'local_assets' else
-            'local_test' if stored_source == 'local_test' else 'ai')
+            'local_test' if stored_source == 'local_test' else
+            'uploaded' if stored_source == 'uploaded' else 'ai')
+        if stored_source == 'uploaded':
+            current_visual.image_generation = None
         snapshot.content['visual'] = current_visual.model_dump(mode='json')
         template = default_template(plan.layout, plan.channel)
         app.state.composer.compose_model(snapshot, background, template)
@@ -184,6 +193,14 @@ def run_visual_render(app, piece_id: str, request_id: str) -> None:
             if current_visual.render_request_id != request_id:
                 db.rollback()
                 return
+            previous = current.content.get('visual') or {}
+            history = list(current.content.get('visual_history') or [])
+            previous_id = (previous.get('final_image') or {}).get('file_id')
+            if previous_id and all((item.get('final_image') or {}).get('file_id') != previous_id for item in history):
+                history.append(previous)
+            snapshot.content['visual_history'] = history
+            snapshot.content['visual_needs_recomposition'] = False
+            snapshot.content['selected_background'] = background.model_dump(mode='json') if stored_source == 'uploaded' else None
             current.content = snapshot.content
             invalidate_stale(current, app.state.catalog, app.state.rules_loader(),
                              app.state.image_storage, app.state.composer)

@@ -178,6 +178,69 @@
         }
       }
     },
+    "/products/{product_id}/image": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Product Image",
+        "operationId": "product_image_products__product_id__image_get",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fotografia autorizada atual do produto.",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/campaigns": {
       "get": {
         "tags": [
@@ -729,6 +792,23 @@
               "type": "string",
               "title": "Piece Id"
             }
+          },
+          {
+            "name": "version_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{32}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version Id"
+            }
           }
         ],
         "responses": {
@@ -770,6 +850,187 @@
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pieces/{piece_id}/edit": {
+      "post": {
+        "tags": [
+          "editing"
+        ],
+        "summary": "Edit Piece",
+        "operationId": "edit_piece_pieces__piece_id__edit_post",
+        "parameters": [
+          {
+            "name": "piece_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Piece Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PieceEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Piece"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pieces/{piece_id}/background": {
+      "post": {
+        "tags": [
+          "editing"
+        ],
+        "summary": "Upload Background",
+        "operationId": "upload_background_pieces__piece_id__background_post",
+        "parameters": [
+          {
+            "name": "piece_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Piece Id"
+            }
+          },
+          {
+            "name": "editor_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "title": "Editor Id"
+            }
+          },
+          {
+            "name": "rights_confirmed",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "title": "Rights Confirmed"
+            }
+          },
+          {
+            "name": "expected_version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "title": "Expected Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Piece"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
               }
             }
           }
@@ -1075,6 +1336,51 @@
         ],
         "title": "Decision"
       },
+      "EditRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "editor_id": {
+            "type": "string",
+            "title": "Editor Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "content",
+              "background"
+            ],
+            "title": "Kind"
+          },
+          "before": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Before"
+          },
+          "after": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "editor_id",
+          "kind",
+          "before",
+          "after"
+        ],
+        "title": "EditRecord"
+      },
       "ErrorDetail": {
         "properties": {
           "code": {
@@ -1248,6 +1554,49 @@
       },
       "Piece": {
         "properties": {
+          "product_photo_version": {
+            "type": "string",
+            "enum": [
+              "legacy",
+              "photos-2026-10"
+            ],
+            "title": "Product Photo Version",
+            "default": "legacy"
+          },
+          "edit_version": {
+            "type": "integer",
+            "title": "Edit Version",
+            "default": 0
+          },
+          "edit_history": {
+            "items": {
+              "$ref": "#/components/schemas/EditRecord"
+            },
+            "type": "array",
+            "title": "Edit History"
+          },
+          "visual_history": {
+            "items": {
+              "$ref": "#/components/schemas/VisualMetadata"
+            },
+            "type": "array",
+            "title": "Visual History"
+          },
+          "visual_needs_recomposition": {
+            "type": "boolean",
+            "title": "Visual Needs Recomposition",
+            "default": false
+          },
+          "selected_background": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageReference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "theme": {
             "anyOf": [
               {
@@ -1286,7 +1635,8 @@
             "type": "integer",
             "enum": [
               1,
-              2
+              2,
+              3
             ],
             "title": "Composition Version",
             "default": 1
@@ -1371,6 +1721,87 @@
           "reviews"
         ],
         "title": "Piece"
+      },
+      "PieceEdit": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "editor_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Editor Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "subtitle": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Subtitle"
+          },
+          "cta": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Cta"
+          },
+          "template": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "produto_centro",
+                  "produto_direita"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template"
+          },
+          "visual_style": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Minimalista",
+                  "Moderno",
+                  "Acolhedor",
+                  "Vibrante",
+                  "Elegante"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visual Style"
+          },
+          "show_price": {
+            "type": "boolean",
+            "title": "Show Price"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "editor_id",
+          "title",
+          "subtitle",
+          "cta",
+          "show_price"
+        ],
+        "title": "PieceEdit"
       },
       "PieceState": {
         "type": "string",
@@ -1717,7 +2148,8 @@
                 "enum": [
                   "ai",
                   "local_assets",
-                  "local_test"
+                  "local_test",
+                  "uploaded"
                 ]
               },
               {

@@ -63,6 +63,8 @@ export function PieceVisual({ piece, campaignId, sourcePieces, disabled, onBusyC
   }
 
   return <section className="space-y-5 border-t border-slate-200 pt-5" aria-label="Peça visual">
+    {piece.visual_needs_recomposition && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">A peça foi alterada. A prévia anterior foi preservada; recomponha explicitamente e valide novamente antes de solicitar aprovação.</p>}
+    {piece.selected_background && <p className="text-sm text-blue-950">Fundo enviado selecionado · {piece.selected_background.width} × {piece.selected_background.height} · SHA-256 {piece.selected_background.sha256.slice(0, 12)}…</p>}
     {status.isPending ? <p role="status">Consultando geração…</p> : status.isError ? <div role="alert">Falha ao consultar renderização: {normalizeHttpError(status.error).message} <button type="button" onClick={() => void status.refetch()} className="underline">Tentar novamente</button></div> : visual && <>
       <section className="space-y-2"><h3 className="font-semibold text-blue-950">Plano visual</h3>
         {visual.plan ? <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
@@ -82,11 +84,12 @@ export function PieceVisual({ piece, campaignId, sourcePieces, disabled, onBusyC
         {canUseLocal && <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-blue-950"><p>A geração de imagens com IA está temporariamente indisponível. Seus textos e revisões foram preservados. Você pode tentar novamente mais tarde ou compor a peça com fotografia do produto, logo e recursos locais, sem gerar uma nova imagem por IA.</p>{visual.retry_after_seconds != null && <p>Aguarde aproximadamente {visual.retry_after_seconds} segundos antes de tentar novamente o provedor.</p>}<button type="button" className={buttonClass} disabled={busy || renderMutation.isPending} onClick={() => void renderPiece({ use_local_assets: true })}>Criar peça com imagens disponíveis</button></div>}
         {visual.composition_source === "local_assets" && <p className="rounded-lg bg-amber-50 p-3 text-sm font-semibold text-amber-950">Peça produzida com recursos locais · sem geração de imagem por IA</p>}
         {visual.composition_source === "local_test" && <p className="text-sm font-semibold text-amber-950">Imagem demonstrativa local · sem IA real</p>}
+        {visual.composition_source === "uploaded" && <p className="rounded-lg bg-blue-50 p-3 text-sm font-semibold text-blue-950">Fundo enviado pela equipe · sem interpretação ou geração de imagem por IA</p>}
         {visual.composition_source === "ai" && <p className="text-sm text-blue-950">Fundo gerado com IA · composição com assets autorizados</p>}
         <div className="flex flex-wrap gap-2">
           <button type="button" className={buttonClass} disabled={!visual.plan || busy || renderMutation.isPending} onClick={() => void renderPiece({})}>Gerar imagem</button>
           <button type="button" className={buttonClass} disabled={!visual.plan || busy || renderMutation.isPending} onClick={() => void renderPiece({ regenerate_background: true })}>Gerar novo fundo</button>
-          <button type="button" className={buttonClass} disabled={!visual.background || busy || renderMutation.isPending} onClick={() => void renderPiece({ force: true })}>Recompor com fundo existente</button>
+          <button type="button" className={buttonClass} disabled={(!visual.background && !piece.selected_background) || busy || renderMutation.isPending} onClick={() => void renderPiece({ force: true })}>Recompor com fundo existente</button>
         </div>
         {sourcePieces.length > 0 && <div className="flex flex-wrap items-end gap-2">
           <label className="text-sm">Reutilizar fundo de outra peça
@@ -102,6 +105,19 @@ export function PieceVisual({ piece, campaignId, sourcePieces, disabled, onBusyC
         {visual.image_generation && <p className="text-xs text-slate-600">Fundo: {visual.image_generation.model} · tentativa {visual.image_generation.attempts}{visual.image_generation.total_tokens != null ? ` · ${visual.image_generation.total_tokens} tokens` : ""}</p>}
       </section>
     </>}
+    {(piece.visual_history?.length ?? 0) > 0 && <details className="rounded-lg border border-slate-200 p-3">
+      <summary className="cursor-pointer font-semibold text-blue-950">Versões visuais anteriores ({piece.visual_history?.length})</summary>
+      {piece.visual_history?.map((previous) => previous.final_image && <HistoricalImage key={previous.final_image.file_id} pieceId={piece.id} fileId={previous.final_image.file_id} date={previous.composed_at} />)}
+    </details>}
     {error !== null && <p role="alert" className="text-sm text-red-800">{normalizeHttpError(error).message}</p>}
   </section>
+}
+
+
+function HistoricalImage({ pieceId, fileId, date }: { pieceId: string; fileId: string; date: string | null }) {
+  const [open, setOpen] = useState(false)
+  return <details className="mt-3" onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <summary className="cursor-pointer text-sm text-blue-900">Versão de {date ? new Date(date).toLocaleString("pt-BR") : fileId}</summary>
+    {open && <PiecePreview pieceId={pieceId} fileId={fileId} title="versão anterior" historical />}
+  </details>
 }
