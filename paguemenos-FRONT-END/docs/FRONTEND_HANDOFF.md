@@ -1,6 +1,22 @@
 # Handoff técnico para o frontend — Creative Factory + Brand Guardian
 
-**Atualização de 2026-10-25:** o backend deste workspace implementa planejamento visual, renderização híbrida e entrega de PNG. A tela `/campanhas/:campaignId` usa as rotas de renderização e prévia documentadas em [API_CONTRACT.md](API_CONTRACT.md). Os parágrafos históricos abaixo que indicam ausência de imagens e de download antecedem essa atualização. A prévia precisa de proteção de acesso antes de exposição pública.
+> **Atualização (26/10/2026):** este documento preserva o handoff histórico
+> do fluxo textual do MVP. A implementação atual também oferece planejamento
+> visual, renderização híbrida, render assíncrono e prévia PNG.
+>
+> A tela `/campanhas/:campaignId` utiliza os endpoints de renderização
+> (`POST/GET /pieces/{piece_id}/render`) e de imagem
+> (`GET /pieces/{piece_id}/image`).
+>
+> O contrato atualizado está em [API_CONTRACT.md](API_CONTRACT.md),
+> no OpenAPI e no [guia de composição](../../backend/docs/composicao.md).
+> O frontend e o backend estão no mesmo repositório, com Docker Compose
+> disponível na raiz.
+>
+> As descrições históricas abaixo que indicam ausência de imagens,
+> download ou edição referem-se a versões anteriores do MVP.
+> Antes de uma exposição pública, as prévias de imagens precisam
+> de proteção adequada de acesso.
 
 Este documento é autossuficiente para implementar a interface do **MVP local**. A referência campo a campo e os exemplos HTTP estão em [API_CONTRACT.md](API_CONTRACT.md); a especificação exportada e verificada está em [openapi.json](openapi.json); a sequência de trabalho está em [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md). Os caminhos `backend/...` citados permitem auditoria, mas o frontend não precisa do código do backend para seguir o contrato descrito aqui.
 
@@ -133,7 +149,7 @@ Portanto, a UI atual não precisa de página de login, guardas por perfil ou env
 
 Recomendação de navegação para o MVP: **Nova campanha** como entrada principal, **Catálogo** para consulta, e **Abrir campanha por ID** ou histórico local de IDs com aviso de escopo local. A tela de detalhes pode ter abas/cartões por canal, painel de validação e linha do tempo de decisões. Um menu de login/administração/dashboard criaria expectativa de funções inexistentes. Formulários de edição ou botões de exclusão não devem aparecer como operacionais. Componentes reutilizáveis recomendados: seletor de produto, chips de canal, campos com contadores, cartão de peça, selo de estado, lista de resultados com severidade, histórico de validações/revisões, confirmação de decisão, feedback de erro e espera. São escolhas de interface, não exigências da API.
 
-## 6. Execução e conexão a partir de outro repositório
+## 6. Execução local
 
 No repositório do backend, PowerShell (Windows), com Python 3.13 disponível:
 

@@ -1,6 +1,6 @@
 # paguemenos-FRONT-END
 
-Frontend React + TypeScript + Vite para o MVP Creative Factory. A aplicação oferece catálogo, detalhe do produto, briefing e confirmação da campanha gerada. A consulta detalhada da campanha, validação e revisão serão implementadas nas próximas etapas.
+Frontend React + TypeScript + Vite para o MVP Creative Factory. A aplicação oferece catálogo e detalhe do produto, briefing e geração de campanhas, histórico, consulta detalhada, validação, revisão humana e prévia das peças renderizadas.
 
 ## Execução local
 
@@ -27,5 +27,5 @@ npm run build
 npm run preview
 ```
 
-O backend está em outro repositório. Veja [contrato da API](docs/API_CONTRACT.md), [arquitetura](docs/FRONTEND_ARCHITECTURE.md) e [progresso](docs/FRONTEND_PROGRESS.md).
+O backend está na pasta `../backend` deste mesmo repositório. Veja [contrato da API](docs/API_CONTRACT.md), [arquitetura](docs/FRONTEND_ARCHITECTURE.md) e [progresso](docs/FRONTEND_PROGRESS.md). Para executar os dois serviços juntos, siga o Compose descrito no README da raiz.
 
