@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 
 import httpx
 import pytest
@@ -8,6 +9,7 @@ from sqlalchemy import func, select, text
 from app.main import create_app
 from app.models import CampaignModel
 from app.schemas import Briefing
+from app.schemas.configuration import parse_rules
 from app.services.catalog import Catalog, load_rules
 from app.services.gemini import GeminiGenerationService
 from app.services.generation import GenerationError, configured_generator, MockGenerationService
@@ -17,11 +19,21 @@ from app.settings import GenerationConfig
 BRIEF = dict(campaign_name='Demo', product_id='syn-001', objective='Apresentar',
              target_audience='Adultos', channels=['feed'])
 COPY = dict(channel='feed', title='Conheça Sabonete Brisa', subtitle='Cuidado diário.', cta='Confira')
+VISUAL = dict(channel='feed', art_direction='Fundo claro e equilibrado',
+    background_prompt='Fundo abstrato em tons suaves com espaço livre', layout='produto_direita',
+    palette=['#DDEEFF'], concept='Clareza', visual_style='Minimalista',
+    scenario='Estúdio abstrato', lighting='Difusa', decorative_elements=['formas suaves'])
 
 
 def response_for(pieces=None, finish='STOP'):
     return {'candidates': [{'finishReason': finish, 'content': {'parts': [
         {'text': json.dumps({'pieces': pieces if pieces is not None else [COPY]})}
+    ]}}]}
+
+
+def package_response_for(pieces=None):
+    return {'candidates': [{'finishReason': 'STOP', 'content': {'parts': [
+        {'text': json.dumps({'pieces': pieces if pieces is not None else [COPY], 'visual_plans': [VISUAL]})}
     ]}}]}
 
 
@@ -48,6 +60,65 @@ def test_request_contains_authorized_context_and_strict_schema():
         assert 'tools' not in payload
         return httpx.Response(200, json=response_for())
     assert invoke(provider(handler))[0].title == COPY['title']
+
+
+@pytest.mark.parametrize('parsed', [False, True])
+def test_creative_context_preserves_rules_product_and_mock(parsed):
+    source = load_rules()
+    source['required_expressions'] = [{
+        'expression': 'Cuidado consciente', 'fields': ['subtitle'],
+        'channels': ['feed'], 'severity': 'critical',
+    }]
+    original = parse_rules(source) if parsed else source
+    snapshot = deepcopy(original)
+    expected_rules = parse_rules(original).model_dump(mode='json')
+    del expected_rules['generation']['templates']
+    briefing = Briefing(**(BRIEF | {'channels': ['feed', 'story', 'banner']}))
+    product = Catalog().get('syn-001')
+    mock = MockGenerationService(lambda: original)
+    before = mock.generate(briefing, product)
+
+    def handler(request):
+        payload = json.loads(request.content)
+        context = json.loads(payload['contents'][0]['parts'][0]['text'])
+        assert 'templates' not in context['brand_rules']['generation']
+        assert context['brand_rules'] == expected_rules
+        assert context['authorized_product'] == product.model_dump(mode='json')
+        assert context['briefing'] == briefing.model_dump(mode='json')
+        return httpx.Response(200, json=response_for([
+            COPY | {'channel': channel} for channel in briefing.channels
+        ]))
+
+    service = GeminiGenerationService(
+        GenerationConfig(provider='gemini', api_key='test-secret'),
+        lambda: original, httpx.MockTransport(handler),
+    )
+    service.generate(briefing, product)
+    assert original == snapshot
+    assert mock.generate(briefing, product) == before
+    assert [piece.title for piece in before] == [
+        'Marca de demonstração: conheça Sabonete Brisa',
+        'Seu próximo cuidado: Sabonete Brisa',
+        'Descubra Sabonete Brisa',
+    ]
+    assert all(piece.subtitle == 'Sabonete corporal fictício de uso diário. Cuidado com informação clara.'
+               and piece.cta == 'Conheça o produto' for piece in before)
+
+
+def test_instructions_request_originality_with_mandatory_brand_rules_first():
+    def handler(request):
+        payload = json.loads(request.content)
+        instructions = payload['systemInstruction']['parts'][0]['text']
+        for requirement in (
+            'títulos e subtítulos originais', 'objetivo', 'público-alvo', 'canal do briefing',
+            'Varie a construção das frases', 'sem inventar fatos, preços, descontos, ofertas',
+            'benefícios não autorizados', 'Preserve a identidade e o tom da marca',
+            'Todas as regras obrigatórias da marca têm prioridade sobre a criatividade',
+            'Não inclua valores monetários', 'disclaimer também será inserido pelo backend',
+        ):
+            assert requirement in instructions
+        return httpx.Response(200, json=response_for())
+    invoke(provider(handler))
 
 
 @pytest.mark.parametrize('status,code', [(401, 'GENERATION_AUTH_ERROR'), (403, 'GENERATION_AUTH_ERROR'),
@@ -119,10 +190,10 @@ def test_failure_persists_nothing_and_never_falls_back(tmp_path, caplog):
 @pytest.mark.parametrize('subtitle,rule', [('Por R$ 0,01', 'TEXT_PRICE_MATCH'),
     ('Ganhe 50% de desconto', 'TEXT_OFFER_MATCH'), ('Cura garantida', 'FORBIDDEN_EXPRESSION')])
 def test_gemini_copy_still_requires_guardian_and_human(tmp_path, subtitle, rule):
-    service = provider(lambda request: httpx.Response(200, json=response_for([COPY | {'subtitle': subtitle}])))
+    service = provider(lambda request: httpx.Response(200, json=package_response_for([COPY | {'subtitle': subtitle}])))
     app = create_app(database_url='sqlite:///' + (tmp_path / 'guardian.db').as_posix(), generator=service)
     with TestClient(app) as client:
-        campaign = client.post('/campaigns/generate', json=BRIEF).json()
+        campaign = client.post('/campaigns/generate', json=BRIEF | {'show_price': True}).json()
         piece = campaign['pieces'][0]
         assert piece['price'] == '8.90' and piece['state'] == 'draft'
         review_url = f'/pieces/{piece["id"]}/review'
@@ -139,7 +210,7 @@ def test_generation_does_not_hold_sqlite_write_lock(tmp_path):
         with app.state.engine.connect() as connection:
             connection.execute(text('BEGIN IMMEDIATE'))
             connection.rollback()
-        return httpx.Response(200, json=response_for())
+        return httpx.Response(200, json=package_response_for())
     app = create_app(database_url='sqlite:///' + (tmp_path / 'lock.db').as_posix(), generator=provider(handler))
     with TestClient(app) as client:
         campaign = client.post('/campaigns/generate', json=BRIEF)

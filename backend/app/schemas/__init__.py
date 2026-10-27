@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class Channel(StrEnum):
@@ -29,8 +29,12 @@ class InputModel(BaseModel):
 
 Text = Annotated[str, Field(min_length=1, max_length=2000)]
 Money = Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=2)]
+VisualStyle = Literal['Minimalista', 'Moderno', 'Acolhedor', 'Vibrante', 'Elegante']
 
 class Briefing(InputModel):
+    theme: str | None = Field(default=None, min_length=1, max_length=120)
+    visual_style: VisualStyle | None = None
+    show_price: bool = False
     campaign_name: Text
     product_id: Text
     objective: Text
@@ -59,6 +63,96 @@ class GeneratedText(InputModel):
     subtitle: Text
     cta: Text
 
+class VisualProcessingState(StrEnum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    BACKGROUND_READY = "background_ready"
+    COMPOSED = "composed"
+    BLOCKED = "blocked"
+    FAILED = "failed"
+
+class VisualPlan(InputModel):
+    channel: Channel
+    art_direction: Annotated[str, Field(min_length=1, max_length=1000)]
+    background_prompt: Annotated[str, Field(min_length=1, max_length=2000)]
+    layout: Annotated[str, Field(min_length=1, max_length=100)]
+    palette: list[Annotated[str, Field(pattern=r"^#[0-9a-fA-F]{6}$")]] = Field(default_factory=list, max_length=8)
+    concept: str | None = Field(default=None, max_length=500)
+    visual_style: str | None = Field(default=None, max_length=500)
+    scenario: str | None = Field(default=None, max_length=500)
+    lighting: str | None = Field(default=None, max_length=500)
+    decorative_elements: list[Annotated[str, Field(min_length=1, max_length=120)]] = Field(default_factory=list, max_length=8)
+
+class TemplateConfig(InputModel):
+    name: Annotated[str, Field(min_length=1, max_length=100)]
+    channel: Channel
+    width: Annotated[int, Field(gt=0, le=10000)]
+    height: Annotated[int, Field(gt=0, le=10000)]
+    safe_area: dict[str, Annotated[int, Field(ge=0)]] = Field(default_factory=dict)
+    min_font_size: Annotated[int, Field(gt=0, le=200)] = 20
+    max_font_size: Annotated[int, Field(gt=0, le=300)] = 84
+
+class ImageReference(InputModel):
+    file_id: Annotated[str, Field(pattern=r"^[0-9a-f]{32}$")]
+    media_type: Literal["image/png", "image/jpeg", "image/webp"]
+    width: int | None = Field(default=None, gt=0)
+    height: int | None = Field(default=None, gt=0)
+    sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+
+class GenerationMetadata(InputModel):
+    provider: Annotated[str, Field(min_length=1, max_length=80)]
+    model: Annotated[str, Field(min_length=1, max_length=120)]
+    created_at: datetime
+    prompt_tokens: int | None = Field(default=None, ge=0)
+    response_tokens: int | None = Field(default=None, ge=0)
+    total_tokens: int | None = Field(default=None, ge=0)
+    attempts: int | None = Field(default=None, ge=1, le=3)
+
+class BackgroundGenerationMetadata(InputModel):
+    generation_id: str
+    plan_id: str
+    model: str
+    prompt: str
+    created_at: datetime
+    attempts: int = Field(ge=1, le=2)
+    duration_seconds: float = Field(ge=0)
+    prompt_tokens: int | None = Field(default=None, ge=0)
+    response_tokens: int | None = Field(default=None, ge=0)
+    total_tokens: int | None = Field(default=None, ge=0)
+    estimated_cost_usd: Decimal | None = Field(default=None, ge=0)
+    cost_basis: str | None = None
+
+class VisualMetadata(InputModel):
+    composition_source: Literal['ai', 'local_assets', 'local_test', 'uploaded'] | None = None
+    fallback_reason: str | None = None
+    retry_after_seconds: int | None = Field(default=None, ge=0)
+    state: VisualProcessingState = VisualProcessingState.PENDING
+    plan: VisualPlan | None = None
+    template: TemplateConfig | None = None
+    background: ImageReference | None = None
+    product_image: ImageReference | None = None
+    final_image: ImageReference | None = None
+    generation: GenerationMetadata | None = None
+    render_request_id: str | None = None
+    plan_id: str | None = None
+    image_generation: BackgroundGenerationMetadata | None = None
+    composed_at: datetime | None = None
+    source_piece_id: str | None = None
+    error_code: str | None = None
+    error_message: str | None = None
+    visual_review_required: bool = True
+
+class RenderRequest(InputModel):
+    use_local_assets: bool = False
+    request_id: str | None = Field(default=None, pattern=r"^[0-9a-fA-F-]{36}$")
+    source_piece_id: str | None = None
+    regenerate_background: bool = False
+    force: bool = False
+
+class RenderStatus(BaseModel):
+    piece_id: str
+    visual: VisualMetadata
+
 class ValidationResult(BaseModel):
     rule_code: str
     severity: Severity
@@ -83,7 +177,35 @@ class ReviewRecord(ReviewDecision):
     created_at: datetime
     fingerprint: str
 
+class PieceEdit(InputModel):
+    expected_version: int = Field(ge=0)
+    editor_id: Annotated[str, Field(min_length=1, max_length=100)]
+    title: Text
+    subtitle: Text
+    cta: Text
+    template: Literal['produto_centro', 'produto_direita'] | None = None
+    visual_style: VisualStyle | None = None
+    show_price: bool
+
+class EditRecord(BaseModel):
+    id: str
+    created_at: datetime
+    editor_id: str
+    kind: Literal['content', 'background']
+    before: dict
+    after: dict
+
 class Piece(BaseModel):
+    product_photo_version: Literal['legacy', 'photos-2026-10'] = 'legacy'
+    edit_version: int = 0
+    edit_history: list[EditRecord] = Field(default_factory=list)
+    visual_history: list[VisualMetadata] = Field(default_factory=list)
+    visual_needs_recomposition: bool = False
+    selected_background: ImageReference | None = None
+    theme: str | None = None
+    visual_style: VisualStyle | None = None
+    show_price: bool = True
+    composition_version: Literal[1, 2, 3] = 1
     id: str
     campaign_id: str
     channel: Channel
@@ -100,6 +222,7 @@ class Piece(BaseModel):
     reviews: list[ReviewRecord]
 
 class Campaign(BaseModel):
+    generation: GenerationMetadata | None = None
     id: str
     created_at: datetime
     briefing: Briefing

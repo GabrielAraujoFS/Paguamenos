@@ -12,6 +12,7 @@ const ProductsPage = lazy(() => import("@/pages/ProductsPage").then((module) => 
 const ProductDetailPage = lazy(() => import("@/pages/ProductDetailPage").then((module) => ({ default: module.ProductDetailPage })))
 const NewCampaignPage = lazy(() => import("@/pages/NewCampaignPage").then((module) => ({ default: module.NewCampaignPage })))
 const CampaignsPage = lazy(() => import("@/pages/CampaignsPage").then((module) => ({ default: module.CampaignsPage })))
+const CampaignDetailPage = lazy(() => import("@/pages/CampaignDetailPage").then((module) => ({ default: module.CampaignDetailPage })))
 
 export function App() {
   return (
@@ -24,7 +25,9 @@ export function App() {
             <Route path="products" element={<ProductsPage />} />
             <Route path="products/:productId" element={<ProductDetailPage />} />
             <Route path="campaigns/new" element={<NewCampaignPage />} />
+            <Route path="campaigns/:campaignId" element={<CampaignDetailPage />} />
             <Route path="campanhas" element={<CampaignsPage />} />
+          <Route path="campanhas/:campaignId" element={<CampaignDetailPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

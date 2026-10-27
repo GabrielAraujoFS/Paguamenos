@@ -1,5 +1,35 @@
 # Contrato da API — Creative Factory + Brand Guardian
 
+## Fotografias autorizadas de produtos (2026-10-26)
+
+GET `/products/{product_id}/image` retorna a fotografia PNG registrada do produto existente, com ETag SHA-256 e nosniff. Ausência retorna 404; inconsistência de arquivo/registro retorna 409. Não recebe caminho de arquivo. O contrato comercial de Product permanece igual. Piece acrescenta product_photo_version opcional na entrada de dados legados: legacy (padrão de leitura) ou photos-2026-10, persistida nas novas campanhas quando o pacote está disponível. Assets legados permanecem separados para preservar fingerprints/aprovações. Veja [associação, testes, Docker e roteiro](../../docs/fotografias-produtos.md).
+
+## Edição e upload como fundo (2026-10-26)
+
+Novas operações reais neste backend: POST `/pieces/{piece_id}/edit` (JSON PieceEdit) e POST `/pieces/{piece_id}/background` (corpo binário PNG/JPEG, query editor_id, rights_confirmed=true e expected_version). Ambas retornam Piece. O upload é selecionado para recomposição explícita; não é referência visual para IA. Campos comerciais/disclaimer não são editáveis. expected_version deve corresponder ao edit_version atual, inicialmente zero nas peças antigas; conflito ou render em andamento retorna 409. Conteúdo/arquivo inválido retorna 422; corpo acima de 5 MiB retorna 413.
+
+Piece acrescenta edit_version, edit_history, visual_history, visual_needs_recomposition e selected_background. O compositor aceita versão 3 e a origem uploaded. GET `/pieces/{piece_id}/image` aceita version_id opcional, somente de uma versão vinculada à peça. Arquivo histórico não representa aprovação atual. RenderRequest mantém o contrato anterior; force=true usa o fundo selecionado/existente. Veja [contratos completos, limites, multimodal e roteiro](../../docs/ferramentas-marketing.md). O Nginx permite 5m em /api/ para corresponder ao limite do upload.
+
+## Personalização aditiva (2026-10-26)
+
+`Briefing` aceita `theme` (opcional/nulo, 1–120 caracteres), `visual_style` (opcional/nulo: Minimalista, Moderno, Acolhedor, Vibrante, Elegante) e `show_price` (booleano, false nas novas campanhas). `Piece` expõe essas preferências e `composition_version` (1 legado, 2 novo). Campanhas persistidas sem preferência mantêm show_price=true e layout antigo. Catálogo e campos comerciais internos continuam completos. Não há novo endpoint nem migração. Os três snapshots OpenAPI foram exportados da aplicação FastAPI atual. Consulte [comportamento e roteiro manual](../../docs/personalizacao-campanhas.md).
+
+## Continuação explícita após falha de IA (2026-10-26)
+
+Falhas temporárias/429 de texto podem incluir `demo_token` em `error.details`. Somente após consentimento, repetir POST `/campaigns/generate` com esse parâmetro opcional e o mesmo briefing cria uma versão mock. O servidor exige oferta válida vinculada ao briefing/produto/regras; 409 indica oferta expirada/alterada. Erros de validação, segurança, autenticação ou HTTP 400 não autorizam fallback. O campo opcional `Campaign.generation` registra provider/model/data e identifica conteúdo demonstrativo, inclusive após reabrir a campanha.
+
+`RenderRequest.use_local_assets` é opcional (false). Após falha visual elegível, essa opção solicita composição Pillow com assets locais, sem nova chamada de IA. `VisualMetadata.composition_source`, `fallback_reason` e `retry_after_seconds` indicam origem e diagnóstico. Falhas de renderização preservam o conteúdo validado e o PNG anterior; uma nova arte concluída exige revalidação. A origem do PNG também aparece em `X-Creative-Composition-Source`. Consulte [detalhes e limites](../../docs/fallback.md). Os demais contratos e as regras comerciais/Brand Guardian permanecem.
+
+## Atualização do pipeline híbrido (2026-10-25)
+
+O OpenAPI vivo do backend neste workspace acrescentou `POST /pieces/{piece_id}/render`, `GET /pieces/{piece_id}/render` e `GET /pieces/{piece_id}/image`. As afirmações antigas abaixo sobre inexistência de mídia e geração apenas textual descrevem a versão anterior.
+
+`POST .../render` recebe `RenderRequest` (`request_id?`, UUID textual; `force?`, `regenerate_background?`, `source_piece_id?`) e responde `RenderStatus` com 202 quando inicia/processa, ou 200 quando já está composto ou bloqueado. `GET .../render` devolve o mesmo status. `visual.state` pode ser `pending`, `processing`, `background_ready`, `composed`, `blocked` ou `failed`; as referências `background`, `product_image` e `final_image` são `ImageReference` (`file_id`, `media_type`, `width?`, `height?`, `sha256`). O plano visual, template e metadados de geração estão dentro de `visual`, não no objeto público `Piece`.
+
+`GET .../image` retorna o PNG final somente quando `visual.state` é `composed`, com `Content-Type: image/png`, `Cache-Control: private, no-store`, `Content-Disposition: inline` e cabeçalhos `X-Creative-Asset-Use: internal-preview` e `X-Creative-Approval-State`. A imagem é uma **prévia interna**, inclusive quando a peça está aprovada. A rota resolve exclusivamente a referência persistida da peça; o cliente não envia caminho nem ID de arquivo. Respostas tratadas incluem 404 para peça/imagem ausente e 409 para referência ou integridade inválida.
+
+**Segurança:** não há autenticação nem autorização no backend atual. A rota de imagem e as operações de campanha/revisão não devem ser expostas publicamente sem controle de acesso na borda ou autenticação implementada no servidor. `reviewer_id` continua autodeclarado. O frontend não interpreta a prévia nem o download como publicação.
+
 Fonte: implementação FastAPI em `backend/app/main.py`, `backend/app/api/`, `backend/app/schemas/` e serviços; `docs/openapi.json` é cópia da especificação exportada pelo backend, cuja igualdade com `/openapi.json` é verificada em `backend/tests/test_brand_configuration.py`. Esta referência descreve também regras de execução que o OpenAPI não expressa. Versão da aplicação: `0.1.0`. URL local usual: `http://127.0.0.1:8000`; não há prefixo `/api` nem versionamento de rota.
 
 **Atualização de 2026-10-24:** o OpenAPI vivo acrescentou `GET /campaigns`, detalhado abaixo. As menções antigas a sete endpoints e à ausência de paginação referem-se ao contrato anterior; a listagem agora é a exceção com paginação e filtros próprios.

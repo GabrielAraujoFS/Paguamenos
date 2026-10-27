@@ -1,9 +1,25 @@
-# Geração textual: mock e Gemini
+# Geração textual e direção visual: mock e Gemini
 
 Os sete endpoints, schemas públicos e tabelas permanecem iguais. O padrão é
 `mock`, local, determinístico e sem chave. Gemini é opcional e só chama a API
-quando POST /campaigns/generate é solicitado. Nenhuma dependência foi adicionada:
-o adaptador REST reutiliza HTTPX e Pydantic.
+quando POST /campaigns/generate é solicitado. A integração Gemini reutiliza
+HTTPX e Pydantic, sem dependências adicionais para o provedor.
+
+No fluxo de campanha, mock e Gemini retornam texto e um `VisualPlan` para cada
+canal Feed/Stories. O adaptador Gemini solicita ambos em uma única resposta JSON
+estruturada; `GeminiGenerationService.generate()` continua disponível para uso
+textual direto. O plano e os metadados (modelo, tentativas e contagem de tokens
+quando fornecida) são guardados em `PieceModel.content.visual`, sem novos campos
+na resposta pública. Banner mantém a geração textual e não recebe plano visual,
+pois o compositor atual suporta somente Feed e Stories. Nenhuma imagem é gerada
+nesta etapa.
+
+O backend aceita apenas `produto_centro` e `produto_direita` e acrescenta ao
+prompt de fundo as áreas livres do template e proibições explícitas de texto,
+preço, logotipo, embalagem, produto fictício e marca d'água. Planos com termos
+comerciais detectáveis, campos ausentes ou canais inesperados são rejeitados.
+`VISUAL_MAX_ATTEMPTS` limita a 1–3 as tentativas de resposta estruturada
+(padrão 2); erros 401/403 e 429 não são repetidos.
 
 ## Executar com mock
 

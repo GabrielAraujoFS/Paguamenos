@@ -1,6 +1,6 @@
 # Arquitetura proposta do frontend
 
-Estado: etapas de fundação, catálogo, briefing e listagem de campanhas implementadas. Base documental: [API_CONTRACT.md](API_CONTRACT.md), [FRONTEND_HANDOFF.md](FRONTEND_HANDOFF.md), [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md) e [openapi.json](openapi.json). O contrato descreve o backend `0.1.0` do MVP local e sintético. A listagem foi confirmada no backend vivo em 2026-10-24.
+Estado: fundação, catálogo, briefing, listagem, detalhes de campanha, validação e revisão por peça implementados. Base documental: [API_CONTRACT.md](API_CONTRACT.md), [FRONTEND_HANDOFF.md](FRONTEND_HANDOFF.md), [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md) e [openapi.json](openapi.json). O contrato descreve o backend `0.1.0` do MVP local e sintético.
 
 ## Escopo documentado
 
@@ -72,6 +72,10 @@ Um campo “Abrir campanha por ID” pode navegar para `/campaigns/:campaignId`.
 
 ## Fluxos e consistência
 
+Integração de 2026-10-26: `/campaigns/:campaignId` e `/campanhas/:campaignId` são aliases da mesma tela. `PieceDetail` preserva conteúdo, validações, confirmação e histórico de revisão; `PieceVisual` reúne planejamento, geração de fundos, recomposição, reutilização autorizada, polling e `PiecePreview`. Os três serviços visuais correspondem às rotas reais `POST/GET /pieces/{id}/render` e `GET /pieces/{id}/image`. O estado visual vem de `RenderStatus`, sem acrescentar campos ao contrato `Piece`.
+
+Operações editoriais ficam desabilitadas durante renderização ativa. Ao terminar o job, detalhe e listas são invalidados para obter o estado editorial corrente. A proteção contra clique duplo combina bloqueio durante requisição com janela de 800 ms para respostas imediatas. A aprovação segue o backend: campanhas textuais continuam aprováveis após validação; arte composta recebe também as checagens visuais. Não se exige imagem composta de todos os canais, pois essa restrição não existe no servidor.
+
 1. Carregar produtos da API; enviar apenas campos aceitos em `GenerateRequest`. A geração retorna `Campaign` com uma peça `draft` por canal. Preservar formulário no `502` e oferecer nova tentativa explícita.
 2. Abrir campanha por ID conhecido. `GET /campaigns/{id}` pode persistir a volta de `validated`/`approved` para `draft` se o fingerprint estiver desatualizado; substituir a visão pelo retorno atual. Histórico antigo não define estado presente.
 3. Validar a campanha inteira sem body. Cada chamada cria um `ValidationRun` por peça; bloquear duplo envio e não repetir automaticamente. HTTP 200 com `success: false` é resultado de validação com falhas críticas, não erro HTTP. Severidade e códigos de regra são dados da API, sem quantidade ou ordem fixa.
@@ -85,7 +89,7 @@ Zod reproduz somente limites públicos de entrada: textos obrigatórios de 1–2
 | Impacto | Evidência documental | Efeito no frontend |
 |---|---|---|
 | Bloqueia acesso controlado | Sem autenticação, autorização ou perfis | Não é possível criar login real nem auditoria confiável do revisor. |
-| Limita navegação aos detalhes | A rota frontend de detalhe por ID ainda não foi implementada | A listagem mostra resumo e estados por peça; acesso aos detalhes integra a etapa 2. |
+| Verificação visual pendente | Detalhes e ações testados por componentes e serviços HTTP; sem inspeção visual em navegador nesta etapa | Conferir encaixe e navegação em telas pequenas antes da apresentação. |
 | Bloqueia edição e operação | Sem atualização/regeneração de peça, mídia, exportação, publicação, métricas ou CRUD de regras/produtos | Essas telas e ações aguardam novos contratos do backend. |
 | Alto | Regras e catálogo mudam sem endpoint de configuração/eventos | Estado pode ser invalidado em consulta; validação do servidor é autoridade. |
 | Alto | CORS documentado apenas para origens locais explícitas | Hospedagem remota exige decisão e configuração do backend. |
@@ -93,3 +97,22 @@ Zod reproduz somente limites públicos de entrada: textos obrigatórios de 1–2
 | Médio | Snapshot OpenAPI não descreve todos os erros de execução | Confirmar integração com backend vivo na próxima etapa. |
 
 Não faltam os arquivos documentais essenciais para **planejar o MVP**: contrato, handoff, plano anterior e OpenAPI estão em `docs/`. Faltam, para recursos além dele, contratos de identidade/permissões, edição/regeneração, configuração de marca, publicação/mídia e implantação remota. Se a API viva divergir do snapshot, registrar a diferença antes de implementar comportamento dependente dela.
+
+
+## Personalização de briefing (2026-10-26)
+
+Tema personalizado é estado de formulário; `toGenerateRequest` envia somente o tema resolvido ao backend. Estilo e preço são campos independentes, preservados no mesmo formulário durante erro/fallback. Não se altera o objeto produto nem se oculta preço de catálogo: o detalhe distingue dados internos de publicação. A preferência persistida e a projeção de publicação/composição pertencem ao servidor. Não há novo endpoint ou estado de aprovação local. Compatibilidade dos PNGs antigos usa versão do compositor, sem recriação automática. Ver [contrato e limitações](../../docs/personalizacao-campanhas.md).
+
+
+## Ferramentas de marketing (2026-10-26)
+
+ValidationResults reutiliza os resultados reais em um resumo e details/summary nativo por categorias. PieceEditor mantém rascunho local até salvar, usa os serviços centralizados editPiece/uploadPieceBackground e atualiza o cache com a Piece real. A versão carregada impede sobrescrita concorrente. Salvar/upload não inicia composição; PieceVisual reutiliza render force=true e mostra origem do fundo e a necessidade de recompor. Histórico tem consulta antes/depois em linguagem de produto e versões antigas do PNG são carregadas sob demanda, por referências vinculadas à peça. Nenhum estado de aprovação é calculado localmente para substituir o backend.
+
+Os novos endpoints, metadados e limites estão nos snapshots OpenAPI e no [relatório](../../docs/ferramentas-marketing.md). O editor não altera instruções globais da campanha, fotos oficiais, preços/ofertas de catálogo nem regras. Upload só fornece fundo; não há interpretação multimodal. Formulário usa React Hook Form/Zod e mutações sem retry automático. Alterações/versões são persistidas pelo backend no JSON existente, sem migração.
+
+
+## Fotografias do catálogo (2026-10-26)
+
+ProductPhoto é compartilhado por ProductCard e ProductDetailPage. Seu endereço é resolvido por apiClient.getUri, usando a mesma base de API dos demais serviços: local absoluto ou /api no Docker. Não há mapa duplicado de arquivos no frontend nem cópia de fotos no bundle. O servidor resolve produto/versão no registro de assets; o quadro 4:3 com object-contain preserva fotos horizontais e um placeholder acessível substitui erros de carregamento. Dados comerciais e navegação permanecem.
+
+Pillow e Brand Guardian usam o mesmo registro de fotografias versionadas e os hashes fixados. Assets antigos não são substituídos; Piece sem versão permanece legacy. O [relatório](../../docs/fotografias-produtos.md) descreve o risco de invalidar aprovações e a proteção adotada.

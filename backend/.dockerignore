@@ -8,8 +8,6 @@ __pycache__/
 .env
 .env.*
 !.env.example
-tests/
-examples/
 docs/
 
 AGENTS.md

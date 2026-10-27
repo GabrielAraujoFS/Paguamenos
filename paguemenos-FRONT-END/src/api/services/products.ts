@@ -10,3 +10,8 @@ export async function getProduct(productId: string): Promise<Product> {
   const { data } = await apiClient.get<Product>(`/products/${encodeURIComponent(productId)}`)
   return data
 }
+
+
+export function getProductImageUrl(productId: string): string {
+  return apiClient.getUri({ url: `/products/${encodeURIComponent(productId)}/image` })
+}

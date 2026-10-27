@@ -3,7 +3,7 @@ import type { HttpError } from "@/api/errors"
 import type { BriefingFormValues } from "@/features/campaigns/briefing-schema"
 
 const fields = new Set<keyof BriefingFormValues>([
-  "campaign_name", "product_id", "objective", "target_audience", "channels", "additional_instructions",
+  "theme", "custom_theme", "visual_style", "show_price", "campaign_name", "product_id", "objective", "target_audience", "channels", "additional_instructions",
 ])
 
 export function applyBriefingServerErrors(
@@ -16,7 +16,8 @@ export function applyBriefingServerErrors(
   if (error.code !== "INVALID_REQUEST") return
 
   for (const detail of error.details) {
-    const field = typeof detail.field === "string" ? detail.field.split(".")[1] : undefined
+    const rawField = typeof detail.field === "string" ? detail.field.split(".")[1] : undefined
+    const field = rawField === "theme" ? "custom_theme" : rawField
     if (field && fields.has(field as keyof BriefingFormValues)) {
       const message = typeof detail.message === "string" ? detail.message : error.message
       setError(field as keyof BriefingFormValues, { type: "server", message })

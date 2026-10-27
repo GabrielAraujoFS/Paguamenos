@@ -38,5 +38,13 @@
     "category": "acessórios",
     "price": "6.75",
     "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
+  },
+  {
+    "id": "syn-006",
+    "name": "Protetor Solar Solara",
+    "category": "Proteção solar",
+    "description": "Protetor solar facial fictício FPS 50, toque seco, 60 g.",
+    "price": "39.90",
+    "authorized_offer": "Preço sintético de demonstração, sem desconto adicional."
   }
 ]

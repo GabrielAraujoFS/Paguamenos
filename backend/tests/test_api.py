@@ -30,7 +30,7 @@ def test_health(env):
 def test_catalog(env):
     client=env[0]
     products=client.get('/products').json()
-    assert len(products)==5
+    assert len(products)==6
     assert products[0]['price']=='8.90'
     assert client.get('/products/syn-001').json()==products[0]
     assert client.get('/products/missing').status_code==404

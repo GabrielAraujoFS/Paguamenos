@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 
 from app.schemas import Severity, ValidationResult
 from app.schemas.configuration import parse_rules
+from app.services.publication import has_price, published_texts
 
 
 TEXT_FIELDS = ('title', 'subtitle', 'cta', 'disclaimer')
@@ -27,11 +28,12 @@ def contains(text, expression):
     return bool(expression_pattern(expression).search(normalize(str(text or ''))))
 
 
-def fingerprint(content, product, rules):
+def fingerprint(content, product, rules, visual_evidence=None):
     payload = dict(
         content=content,
         product=product.model_dump(mode='json') if product else None,
         rules=parse_rules(rules).model_dump(mode='json'),
+        visual_evidence=visual_evidence or {},
     )
     return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
@@ -124,6 +126,18 @@ def validate_content(content, product, rules):
               'Use preço em R$ 0,00 igual ao catálogo, ou copie a oferta autorizada completa; respeite a política de preços em texto.')
         check('TEXT_OFFER_MATCH', field, offers_ok,
               'Condições comerciais reconhecidas exigem a oferta autorizada completa do catálogo.')
+    if content.get('show_price', True) is False:
+        for field, value in published_texts(content).items():
+            check('PUBLICATION_PRICE_HIDDEN', field, not has_price(value),
+                  'A publicidade desta campanha não deve conter preços; os dados internos continuam obrigatórios.')
+    if product is not None and any(term in normalize(product.category) for term in ('farmac', 'medicamento')):
+        authorized = f'{product.description} {product.authorized_offer}'
+        for field in ('title', 'subtitle', 'cta'):
+            for claim in ('cura', 'trata', 'previne', 'eficacia', 'resultado garantido'):
+                if contains(content.get(field), claim) and not contains(authorized, claim):
+                    check('HEALTH_CLAIM_REVIEW', field, False,
+                          f'Alegação de saúde ou eficácia sem autorização explícita: {claim}. Revisão regulatória humana necessária.',
+                          Severity.WARNING)
     return results
 
 

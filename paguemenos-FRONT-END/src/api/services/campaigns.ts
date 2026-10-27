@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client"
-import type { Campaign, CampaignListParams, CampaignPage, GenerateRequest } from "@/contracts/api"
+import type { Campaign, CampaignListParams, CampaignPage, GenerateRequest, Piece, PieceEditRequest, RenderRequest, RenderStatus, ReviewRequest } from "@/contracts/api"
 
 function isCampaignPage(value: unknown): value is CampaignPage {
   if (typeof value !== "object" || value === null) return false
@@ -34,4 +34,52 @@ export async function generateCampaign(briefing: GenerateRequest): Promise<Campa
     headers: { "Content-Type": "application/json" },
   })
   return data
+}
+
+export async function generateDemonstration(briefing: GenerateRequest, token: string): Promise<Campaign> {
+  return (await apiClient.post<Campaign>("/campaigns/generate", briefing, { params: { demo_token: token } })).data
+}
+
+export async function getCampaign(campaignId: string): Promise<Campaign> {
+  const { data } = await apiClient.get<Campaign>(`/campaigns/${encodeURIComponent(campaignId)}`)
+  return data
+}
+
+export async function validateCampaign(campaignId: string): Promise<Campaign> {
+  const { data } = await apiClient.post<Campaign>(`/campaigns/${encodeURIComponent(campaignId)}/validate`)
+  return data
+}
+
+export async function reviewPiece(pieceId: string, request: ReviewRequest): Promise<Piece> {
+  const { data } = await apiClient.post<Piece>(`/pieces/${encodeURIComponent(pieceId)}/review`, request)
+  return data
+}
+
+export async function startRender(pieceId: string, request: RenderRequest): Promise<RenderStatus> {
+  const { data } = await apiClient.post<RenderStatus>(`/pieces/${encodeURIComponent(pieceId)}/render`, request)
+  return data
+}
+
+export async function getRender(pieceId: string): Promise<RenderStatus> {
+  const { data } = await apiClient.get<RenderStatus>(`/pieces/${encodeURIComponent(pieceId)}/render`)
+  return data
+}
+
+export async function getPieceImage(pieceId: string, versionId?: string): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(`/pieces/${encodeURIComponent(pieceId)}/image`, {
+    ...(versionId ? { params: { version_id: versionId } } : {}), responseType: "blob", headers: { Accept: "image/png" },
+  })
+  return data
+}
+
+
+export async function editPiece(pieceId: string, request: PieceEditRequest): Promise<Piece> {
+  return (await apiClient.post<Piece>(`/pieces/${encodeURIComponent(pieceId)}/edit`, request)).data
+}
+
+export async function uploadPieceBackground(pieceId: string, file: File, editorId: string, expectedVersion: number): Promise<Piece> {
+  return (await apiClient.post<Piece>(`/pieces/${encodeURIComponent(pieceId)}/background`, file, {
+    params: { editor_id: editorId, expected_version: expectedVersion, rights_confirmed: true },
+    headers: { "Content-Type": file.type },
+  })).data
 }

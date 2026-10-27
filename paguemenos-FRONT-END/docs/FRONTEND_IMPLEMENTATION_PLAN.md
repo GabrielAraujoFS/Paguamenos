@@ -1,5 +1,7 @@
 # Plano de implementação do frontend
 
+**Atualização de 2026-10-25:** a API de renderização híbrida e prévia passou a existir no backend deste workspace. A etapa de detalhe, validação e revisão está implementada em `/campanhas/:campaignId`; o planejamento anterior sobre ausência de mídia/recursos de imagem é histórico. Consulte [API_CONTRACT.md](API_CONTRACT.md) para o contrato atual.
+
 Objetivo: implementar o fluxo **local e sintético** suportado pela API FastAPI `0.1.0`, sem depender de acesso ao código do backend. Contratos, exemplos e erros estão em [API_CONTRACT.md](API_CONTRACT.md); contexto e execução em [FRONTEND_HANDOFF.md](FRONTEND_HANDOFF.md). Este plano recomenda uma organização de trabalho, não impõe framework.
 
 > Atualização de 2026-10-24: `GET /campaigns` passou a existir no OpenAPI vivo, com paginação, busca e filtros. A listagem foi implementada em `/campanhas`; as referências abaixo à ausência desse endpoint descrevem o contrato anterior.

@@ -1,11 +1,22 @@
 # Handoff técnico para o frontend — Creative Factory + Brand Guardian
 
-> **Atualização (26/10/2026):** este é o handoff histórico do fluxo textual. O
-> backend integrado também oferece plano visual, render assíncrono e prévia PNG
-> (`POST/GET /pieces/{piece_id}/render`, `GET /pieces/{piece_id}/image`), já
-> consumidos pelo frontend. O contrato atual está em [`../API_CONTRACT.md`](API_CONTRACT.md),
-> no OpenAPI e no [guia de composição](../../backend/docs/composicao.md). O projeto
-> agora mantém frontend e backend no mesmo repositório e oferece Compose na raiz.
+> **Atualização (26/10/2026):** este documento preserva o handoff histórico
+> do fluxo textual do MVP. A implementação atual também oferece planejamento
+> visual, renderização híbrida, render assíncrono e prévia PNG.
+>
+> A tela `/campanhas/:campaignId` utiliza os endpoints de renderização
+> (`POST/GET /pieces/{piece_id}/render`) e de imagem
+> (`GET /pieces/{piece_id}/image`).
+>
+> O contrato atualizado está em [API_CONTRACT.md](API_CONTRACT.md),
+> no OpenAPI e no [guia de composição](../../backend/docs/composicao.md).
+> O frontend e o backend estão no mesmo repositório, com Docker Compose
+> disponível na raiz.
+>
+> As descrições históricas abaixo que indicam ausência de imagens,
+> download ou edição referem-se a versões anteriores do MVP.
+> Antes de uma exposição pública, as prévias de imagens precisam
+> de proteção adequada de acesso.
 
 Este documento é autossuficiente para implementar a interface do **MVP local**. A referência campo a campo e os exemplos HTTP estão em [API_CONTRACT.md](API_CONTRACT.md); a especificação exportada e verificada está em [openapi.json](openapi.json); a sequência de trabalho está em [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md). Os caminhos `backend/...` citados permitem auditoria, mas o frontend não precisa do código do backend para seguir o contrato descrito aqui.
 

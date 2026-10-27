@@ -49,10 +49,10 @@ const generated: Campaign = {
   }],
 }
 
-function renderForm() {
+function renderForm(products: Product[] = [product]) {
   return render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { mutations: { retry: false } } })}>
-      <MemoryRouter><BriefingForm products={[product]} /></MemoryRouter>
+      <MemoryRouter><BriefingForm products={products} /></MemoryRouter>
     </QueryClientProvider>,
   )
 }
@@ -71,6 +71,22 @@ afterEach(() => {
 })
 
 describe("briefing", () => {
+  it("permite selecionar Solara e enviar seu identificador sem alterar os dados comerciais", async () => {
+    const solara: Product = {
+      id: "syn-006", name: "Protetor Solar Solara", category: "Proteção solar",
+      description: "Protetor solar facial fictício FPS 50, toque seco, 60 g.",
+      price: "39.90", authorized_offer: "Preço sintético de demonstração, sem desconto adicional.",
+    }
+    const user = userEvent.setup()
+    vi.mocked(generateCampaign).mockResolvedValue({ ...generated, briefing: { ...generated.briefing, product_id: solara.id } })
+    renderForm([product, solara])
+    await fillValidForm(user)
+    await user.selectOptions(screen.getByLabelText("Produto"), solara.id)
+    await user.click(screen.getByRole("button", { name: "Gerar campanha" }))
+    await waitFor(() => expect(generateCampaign).toHaveBeenCalledWith(expect.objectContaining({ product_id: "syn-006", show_price: false }), expect.anything()))
+    expect(solara.price).toBe("39.90")
+  })
+
   it("rejeita texto vazio após trim e canais duplicados", () => {
     const result = briefingSchema.safeParse({
       campaign_name: "   ", product_id: product.id, objective: "Divulgar",
@@ -82,7 +98,7 @@ describe("briefing", () => {
     }
   })
 
-  it("bloqueia envio inválido e envia somente os seis campos documentados", async () => {
+  it("bloqueia envio inválido e envia somente os campos documentados", async () => {
     const user = userEvent.setup()
     vi.mocked(generateCampaign).mockResolvedValue(generated)
     renderForm()
@@ -100,7 +116,7 @@ describe("briefing", () => {
       objective: "Divulgar",
       target_audience: "Adultos",
       channels: ["feed"],
-      additional_instructions: null,
+      additional_instructions: null, theme: null, visual_style: "Minimalista", show_price: false,
     }, expect.anything()))
     expect(generateCampaign).toHaveBeenCalledTimes(1)
     expect(await screen.findByText("campaign-id")).toBeTruthy()
@@ -136,3 +152,20 @@ describe("briefing", () => {
     expect(generateCampaign).toHaveBeenCalledTimes(2)
   })
 })
+
+  it("envia tema, estilo e preço autorizado e exige tema personalizado", async () => {
+    const user = userEvent.setup()
+    vi.mocked(generateCampaign).mockResolvedValue(generated)
+    renderForm()
+    await fillValidForm(user)
+    expect((screen.getByLabelText("Exibir preço na peça publicitária?") as HTMLSelectElement).value).toBe("no")
+    await user.selectOptions(screen.getByLabelText("Tema da campanha"), "Personalizado")
+    await user.selectOptions(screen.getByLabelText("Estilo visual"), "Elegante")
+    await user.selectOptions(screen.getByLabelText("Exibir preço na peça publicitária?"), "yes")
+    await user.click(screen.getByRole("button", { name: "Gerar campanha" }))
+    expect(await screen.findByText("Informe o tema personalizado.")).toBeTruthy()
+    expect(generateCampaign).not.toHaveBeenCalled()
+    await user.type(screen.getByLabelText("Tema personalizado"), "Rotina de cuidado")
+    await user.click(screen.getByRole("button", { name: "Gerar campanha" }))
+    await waitFor(() => expect(generateCampaign).toHaveBeenCalledWith(expect.objectContaining({ theme: "Rotina de cuidado", visual_style: "Elegante", show_price: true, objective: "Divulgar" }), expect.anything()))
+  })

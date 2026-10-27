@@ -17,7 +17,12 @@ export type PieceState = "draft" | "validated" | "approved" | "rejected"
 export type Severity = "info" | "warning" | "critical"
 export type Decision = "approved" | "rejected"
 
+export type VisualStyle = "Minimalista" | "Moderno" | "Acolhedor" | "Vibrante" | "Elegante"
+
 export interface Briefing {
+  theme?: string | null
+  visual_style?: VisualStyle | null
+  show_price?: boolean
   campaign_name: string
   product_id: string
   objective: string
@@ -55,7 +60,37 @@ export interface ReviewRecord {
   comment: string | null
 }
 
+export interface PieceEditRequest {
+  expected_version: number
+  editor_id: string
+  title: string
+  subtitle: string
+  cta: string
+  template?: "produto_centro" | "produto_direita"
+  visual_style: VisualStyle | null
+  show_price: boolean
+}
+
+export interface EditRecord {
+  id: string
+  created_at: string
+  editor_id: string
+  kind: "content" | "background"
+  before: Record<string, unknown>
+  after: Record<string, unknown>
+}
+
 export interface Piece {
+  product_photo_version?: "legacy" | "photos-2026-10"
+  edit_version?: number
+  edit_history?: EditRecord[]
+  visual_history?: VisualMetadata[]
+  visual_needs_recomposition?: boolean
+  selected_background?: ImageReference | null
+  theme?: string | null
+  visual_style?: VisualStyle | null
+  show_price?: boolean
+  composition_version?: 1 | 2 | 3
   id: string
   campaign_id: string
   channel: Channel
@@ -73,6 +108,7 @@ export interface Piece {
 }
 
 export interface Campaign {
+  generation?: GenerationMetadata | null
   id: string
   created_at: string
   briefing: Briefing
@@ -92,6 +128,104 @@ export interface CampaignListParams {
   page_size: number
   search?: string
   status?: PieceState
+}
+
+export type VisualProcessingState = "pending" | "processing" | "background_ready" | "composed" | "blocked" | "failed"
+
+export interface ImageReference {
+  file_id: string
+  media_type: "image/png" | "image/jpeg" | "image/webp"
+  width: number | null
+  height: number | null
+  sha256: string
+}
+
+export interface VisualPlan {
+  channel: Channel
+  art_direction: string
+  background_prompt: string
+  layout: string
+  palette: string[]
+  concept: string | null
+  visual_style: string | null
+  scenario: string | null
+  lighting: string | null
+  decorative_elements: string[]
+}
+
+export interface TemplateConfig {
+  name: string
+  channel: Channel
+  width: number
+  height: number
+  safe_area: Record<string, number>
+  min_font_size: number
+  max_font_size: number
+}
+
+export interface GenerationMetadata {
+  provider: string
+  model: string
+  created_at: string
+  prompt_tokens: number | null
+  response_tokens: number | null
+  total_tokens: number | null
+  attempts: number | null
+}
+
+export interface BackgroundGenerationMetadata {
+  generation_id: string
+  plan_id: string
+  model: string
+  prompt: string
+  created_at: string
+  attempts: number
+  duration_seconds: number
+  prompt_tokens: number | null
+  response_tokens: number | null
+  total_tokens: number | null
+  estimated_cost_usd: string | null
+  cost_basis: string | null
+}
+
+export interface VisualMetadata {
+  composition_source?: "ai" | "local_assets" | "local_test" | "uploaded" | null
+  fallback_reason?: string | null
+  retry_after_seconds?: number | null
+  state: VisualProcessingState
+  plan: VisualPlan | null
+  template: TemplateConfig | null
+  background: ImageReference | null
+  product_image: ImageReference | null
+  final_image: ImageReference | null
+  generation: GenerationMetadata | null
+  render_request_id: string | null
+  plan_id: string | null
+  image_generation: BackgroundGenerationMetadata | null
+  composed_at: string | null
+  source_piece_id: string | null
+  error_code: string | null
+  error_message: string | null
+  visual_review_required: boolean
+}
+
+export interface RenderStatus {
+  piece_id: string
+  visual: VisualMetadata
+}
+
+export interface RenderRequest {
+  use_local_assets?: boolean
+  request_id?: string
+  source_piece_id?: string
+  regenerate_background?: boolean
+  force?: boolean
+}
+
+export interface ReviewRequest {
+  decision: Decision
+  reviewer_id: string
+  comment?: string | null
 }
 
 export interface ApiErrorResponse {

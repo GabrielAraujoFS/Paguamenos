@@ -5,13 +5,20 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.api import campaigns, products, reviews
+from app.api import campaigns, images, products, reviews, render, editing
 from app.database import Base, make_engine, make_session_factory
 from app.schemas import ErrorResponse
 from app.schemas.configuration import parse_rules
 from app.services.catalog import Catalog, load_rules
 from app.services.generation import MockGenerationService, configured_generator
 from app.services.gemini import GeminiGenerationService
+from app.services.storage import image_storage_from_environment
+from app.services.composition import PillowComposer
+from app.services.image_generation import GoogleImageBackgroundGenerator, LocalImageBackgroundGenerator, OpenAIImageBackgroundGenerator
+from app.settings import ImageGenerationConfig
+from app.services.availability import DemoOffers
+from app.models import PieceModel
+from sqlalchemy import select
 
 def local_origins(value: str) -> list[str]:
     origins = [o.strip() for o in value.split(",") if o.strip()]
@@ -23,19 +30,31 @@ def local_origins(value: str) -> list[str]:
         parsed.port
     return origins
 
-def create_app(database_url=None, generator=None, catalog=None, rules_loader=None, cors_origins=None):
+def create_app(database_url=None, generator=None, catalog=None, rules_loader=None, cors_origins=None,
+               background_generator=None, composer=None, assets_root=None):
     engine = make_engine(database_url or os.getenv("DATABASE_URL", "sqlite:///./creative_factory.db"))
 
     @asynccontextmanager
     async def lifespan(application):
         Base.metadata.create_all(engine)
+        # An in-process job cannot survive a service restart; make it retryable.
+        with application.state.sessions.begin() as db:
+            for piece in db.scalars(select(PieceModel)):
+                key = '_render_job' if '_render_job' in piece.content else 'visual'
+                visual = piece.content.get(key) or {}
+                if visual.get('state') in ('processing', 'background_ready'):
+                    piece.content = {**piece.content, key: {**visual, 'state': 'failed',
+                        'error_code': 'IMAGE_JOB_INTERRUPTED',
+                        'error_message': 'Processamento interrompido; solicite novamente.'}}
         yield
         engine.dispose()
 
     application = FastAPI(title="Creative Factory + Brand Guardian", version="0.1.0",
         description="MVP local com catálogo e regras sintéticos. Revisão humana obrigatória.",
         lifespan=lifespan,
-        responses={404: {"model": ErrorResponse}, 409: {"model": ErrorResponse}, 422: {"model": ErrorResponse}})
+        # Keep the exported contract stable across Python HTTPStatus wording changes.
+        responses={404: {"model": ErrorResponse}, 409: {"model": ErrorResponse},
+                   422: {"model": ErrorResponse, "description": "Unprocessable Entity"}})
     application.state.engine = engine
     application.state.sessions = make_session_factory(engine)
     application.state.catalog = catalog if catalog is not None else Catalog()
@@ -48,6 +67,18 @@ def create_app(database_url=None, generator=None, catalog=None, rules_loader=Non
     configured_rules()
     application.state.rules_loader = configured_rules
     application.state.generator = generator if generator is not None else configured_generator(configured_rules)
+    application.state.demo_offers = DemoOffers()
+    application.state.image_storage = image_storage_from_environment()
+    image_config = ImageGenerationConfig.from_environment()
+    application.state.background_generator = (background_generator if background_generator is not None else
+        GoogleImageBackgroundGenerator(application.state.image_storage, image_config)
+        if image_config.provider == 'google' else
+        OpenAIImageBackgroundGenerator(application.state.image_storage, image_config)
+        if image_config.provider == 'openai' else
+        LocalImageBackgroundGenerator(application.state.image_storage, image_config.mock_image_path, 'image/png')
+        if image_config.provider == 'mock' else None)
+    application.state.composer = composer if composer is not None else PillowComposer(
+        application.state.image_storage, assets_root=assets_root)
     application.add_middleware(CORSMiddleware,
         allow_origins=local_origins(cors_origins if cors_origins is not None else os.getenv("CORS_ORIGINS", "http://localhost:5173")),
         allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
@@ -69,7 +100,7 @@ def create_app(database_url=None, generator=None, catalog=None, rules_loader=Non
                     'gemini' if isinstance(application.state.generator, GeminiGenerationService) else 'custom')
         return {"status": "ok", "generation_provider": provider}
 
-    for router in (products.router, campaigns.router, reviews.router):
+    for router in (products.router, campaigns.router, reviews.router, render.router, images.router, editing.router):
         application.include_router(router)
     return application
 
